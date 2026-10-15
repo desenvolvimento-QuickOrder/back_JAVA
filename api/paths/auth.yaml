@@ -1,0 +1,84 @@
+login:
+  post:
+    tags: [auth]
+    operationId: login
+    summary: Autentica um usuário
+    description: Troca credenciais por access token e refresh token. Rota pública, com rate limit por IP e por conta.
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth.yaml#/LoginRequest
+    responses:
+      '200':
+        description: Autenticado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/auth.yaml#/TokenResponse
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '429':
+        $ref: ../components/responses.yaml#/TooManyRequests
+refresh:
+  post:
+    tags: [auth]
+    operationId: renovarToken
+    summary: Renova o access token
+    description: |
+      Rotaciona o refresh token: devolve um novo par e invalida o anterior. Uma janela curta de tolerância
+      aceita o token recém-rotacionado (renovação concorrente ou retry); reuso fora dela revoga a família
+      de tokens. Rota pública.
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth.yaml#/RefreshRequest
+    responses:
+      '200':
+        description: Novo par de tokens.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/auth.yaml#/TokenResponse
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '429':
+        $ref: ../components/responses.yaml#/TooManyRequests
+logout:
+  post:
+    tags: [auth]
+    operationId: encerrarSessao
+    summary: Encerra a sessão
+    description: Revoga a família do refresh token informado.
+    x-roles: [ADMIN, GARCOM, COPA]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth.yaml#/RefreshRequest
+    responses:
+      '204':
+        description: Sessão encerrada.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized

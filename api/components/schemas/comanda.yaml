@@ -1,0 +1,57 @@
+StatusComanda:
+  type: string
+  enum: [ABERTA, FECHADA]
+Comanda:
+  type: object
+  required: [id, mesaId, status, abertaEm, abertaPor, fechadaEm, fechadaPor, total]
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    mesaId:
+      type: string
+      format: uuid
+    status:
+      $ref: '#/StatusComanda'
+    abertaEm:
+      type: string
+      format: date-time
+    abertaPor:
+      type: string
+      format: uuid
+    fechadaEm:
+      type: [string, 'null']
+      format: date-time
+    fechadaPor:
+      type: [string, 'null']
+      format: uuid
+    total:
+      description: |
+        Soma dos pedidos não cancelados. Enquanto a comanda está aberta é calculado na leitura;
+        após o fechamento é o valor gravado no fechamento.
+      $ref: ./common.yaml#/Decimal
+ComandaAbertura:
+  type: object
+  required: [mesaId]
+  properties:
+    mesaId:
+      type: string
+      format: uuid
+TransferenciaMesa:
+  type: object
+  required: [mesaDestinoId]
+  properties:
+    mesaDestinoId:
+      type: string
+      format: uuid
+ComandaPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Comanda'

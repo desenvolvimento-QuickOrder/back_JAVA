@@ -1,0 +1,80 @@
+Page:
+  name: page
+  in: query
+  description: Índice da página, começando em 0.
+  schema:
+    type: integer
+    minimum: 0
+    default: 0
+Size:
+  name: size
+  in: query
+  description: Itens por página.
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 100
+    default: 20
+IdempotencyKey:
+  name: Idempotency-Key
+  in: header
+  required: true
+  description: |
+    UUID gerado pelo cliente para tornar a criação idempotente (retenção de 24 horas).
+    Mesma chave e mesmo corpo devolvem a resposta original; mesma chave com corpo diferente
+    retorna 422 (`IDEMPOTENCY_KEY_REUSADA`); mesma chave ainda em processamento retorna 409
+    (`IDEMPOTENCY_KEY_EM_PROCESSAMENTO`).
+  schema:
+    type: string
+    format: uuid
+UsuarioId:
+  name: usuarioId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+MesaId:
+  name: mesaId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+CategoriaId:
+  name: categoriaId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+ProdutoId:
+  name: produtoId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+ComandaId:
+  name: comandaId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+PedidoId:
+  name: pedidoId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+Slug:
+  name: slug
+  in: path
+  required: true
+  description: Identificador público do restaurante.
+  schema:
+    type: string
+    maxLength: 60
+    pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'

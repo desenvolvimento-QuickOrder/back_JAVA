@@ -1,0 +1,173 @@
+colecao:
+  get:
+    tags: [usuarios]
+    operationId: listarUsuarios
+    summary: Lista usuários
+    x-roles: [ADMIN]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+    responses:
+      '200':
+        description: Página de usuários.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/UsuarioPage
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [usuarios]
+    operationId: criarUsuario
+    summary: Cria um usuário
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/usuario.yaml#/UsuarioCriacao
+    responses:
+      '201':
+        description: Usuário criado.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/Usuario
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '409':
+        description: Login já existe no restaurante (`LOGIN_JA_EXISTE`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/UsuarioId
+  get:
+    tags: [usuarios]
+    operationId: obterUsuario
+    summary: Obtém um usuário
+    x-roles: [ADMIN]
+    responses:
+      '200':
+        description: Usuário.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/Usuario
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+  patch:
+    tags: [usuarios]
+    operationId: atualizarUsuario
+    summary: Atualiza um usuário (parcial)
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/usuario.yaml#/UsuarioAtualizacao
+    responses:
+      '200':
+        description: Usuário atualizado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/Usuario
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+desativar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/UsuarioId
+  post:
+    tags: [usuarios]
+    operationId: desativarUsuario
+    summary: Desativa um usuário
+    description: Impede novos logins e revoga os refresh tokens do usuário. Idempotente.
+    x-roles: [ADMIN]
+    responses:
+      '200':
+        description: Usuário desativado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/Usuario
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '422':
+        description: Regra violada, por exemplo desativar o último ADMIN do restaurante (`ULTIMO_ADMIN`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+ativar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/UsuarioId
+  post:
+    tags: [usuarios]
+    operationId: ativarUsuario
+    summary: Reativa um usuário
+    description: Idempotente.
+    x-roles: [ADMIN]
+    responses:
+      '200':
+        description: Usuário ativo.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/usuario.yaml#/Usuario
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound

@@ -1,0 +1,128 @@
+colecao:
+  get:
+    tags: [categorias]
+    operationId: listarCategorias
+    summary: Lista categorias
+    x-roles: [ADMIN, GARCOM, COPA]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+      - name: ativa
+        in: query
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: Página de categorias, ordenadas por `ordem`.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/CategoriaPage
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [categorias]
+    operationId: criarCategoria
+    summary: Cria uma categoria
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/cardapio.yaml#/CategoriaCriacao
+    responses:
+      '201':
+        description: Categoria criada.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Categoria
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '409':
+        description: Já existe categoria com o mesmo nome (`CATEGORIA_NOME_DUPLICADO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/CategoriaId
+  get:
+    tags: [categorias]
+    operationId: obterCategoria
+    summary: Obtém uma categoria
+    x-roles: [ADMIN, GARCOM, COPA]
+    responses:
+      '200':
+        description: Categoria.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Categoria
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+  patch:
+    tags: [categorias]
+    operationId: atualizarCategoria
+    summary: Atualiza uma categoria (parcial)
+    description: Não há exclusão física; arquivar é `ativa=false`.
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/cardapio.yaml#/CategoriaAtualizacao
+    responses:
+      '200':
+        description: Categoria atualizada.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Categoria
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: Já existe categoria com o mesmo nome (`CATEGORIA_NOME_DUPLICADO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem

@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: QuickOrder API
+  version: 1.0.0
+  description: |
+    API pública do QuickOrder (gestão de mesas, comandas e pedidos para restaurantes).
+
+    Convenções:
+    - Versionamento por path (`/api/v1`). Mudança aditiva permanece na v1; mudança incompatível vira v2.
+    - O tenant (restaurante) vem sempre do token. A única exceção é o cardápio público, identificado pelo slug.
+    - Corpo em JSON (camelCase). Datas em ISO-8601 UTC. IDs públicos são UUID.
+    - Valores monetários são strings decimais com duas casas (`"12.50"`); nunca números JSON.
+    - Atualizações parciais (`PATCH`): campo ausente não muda; `null` só é aceito onde o schema permite.
+    - Clientes devem tolerar valores desconhecidos em enums (novos valores podem ser adicionados na v1).
+    - Todas as respostas carregam `X-Correlation-Id` (o enviado pelo cliente ou um gerado pelo servidor).
+    - Erros seguem a RFC 9457 (`application/problem+json`) com o campo `code` estável para o cliente.
+    - Papéis exigidos por operação estão na extensão `x-roles` (documentação; a imposição é do servidor).
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: auth
+    description: Autenticação e renovação de sessão
+  - name: usuarios
+    description: Gestão de usuários e funcionários (ADMIN)
+  - name: mesas
+    description: Cadastro de mesas
+  - name: categorias
+    description: Categorias do cardápio (administração)
+  - name: produtos
+    description: Produtos do cardápio (administração)
+  - name: cardapio
+    description: Cardápio público somente leitura
+  - name: comandas
+    description: Abertura, consulta, transferência e fechamento de comandas
+  - name: pedidos
+    description: Pedidos, fila da copa e transições de status
+paths:
+  /auth/login:
+    $ref: ./paths/auth.yaml#/login
+  /auth/refresh:
+    $ref: ./paths/auth.yaml#/refresh
+  /auth/logout:
+    $ref: ./paths/auth.yaml#/logout
+  /usuarios:
+    $ref: ./paths/usuarios.yaml#/colecao
+  /usuarios/{usuarioId}:
+    $ref: ./paths/usuarios.yaml#/item
+  /usuarios/{usuarioId}/desativar:
+    $ref: ./paths/usuarios.yaml#/desativar
+  /usuarios/{usuarioId}/ativar:
+    $ref: ./paths/usuarios.yaml#/ativar
+  /mesas:
+    $ref: ./paths/mesas.yaml#/colecao
+  /mesas/{mesaId}:
+    $ref: ./paths/mesas.yaml#/item
+  /categorias:
+    $ref: ./paths/categorias.yaml#/colecao
+  /categorias/{categoriaId}:
+    $ref: ./paths/categorias.yaml#/item
+  /produtos:
+    $ref: ./paths/produtos.yaml#/colecao
+  /produtos/{produtoId}:
+    $ref: ./paths/produtos.yaml#/item
+  /produtos/{produtoId}/disponibilidade:
+    $ref: ./paths/produtos.yaml#/disponibilidade
+  /cardapio/{slug}:
+    $ref: ./paths/cardapio.yaml#/publico
+  /comandas:
+    $ref: ./paths/comandas.yaml#/colecao
+  /comandas/{comandaId}:
+    $ref: ./paths/comandas.yaml#/item
+  /comandas/{comandaId}/fechar:
+    $ref: ./paths/comandas.yaml#/fechar
+  /comandas/{comandaId}/transferir-mesa:
+    $ref: ./paths/comandas.yaml#/transferirMesa
+  /comandas/{comandaId}/pedidos:
+    $ref: ./paths/pedidos.yaml#/criar
+  /pedidos:
+    $ref: ./paths/pedidos.yaml#/colecao
+  /pedidos/{pedidoId}:
+    $ref: ./paths/pedidos.yaml#/item
+  /pedidos/{pedidoId}/iniciar-preparo:
+    $ref: ./paths/pedidos.yaml#/iniciarPreparo
+  /pedidos/{pedidoId}/marcar-pronto:
+    $ref: ./paths/pedidos.yaml#/marcarPronto
+  /pedidos/{pedidoId}/entregar:
+    $ref: ./paths/pedidos.yaml#/entregar
+  /pedidos/{pedidoId}/cancelar:
+    $ref: ./paths/pedidos.yaml#/cancelar
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,65 @@
+BadRequest:
+  description: Requisição malformada ou validação de campo (`code` típico `VALIDACAO_INVALIDA`).
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+Unauthorized:
+  description: Não autenticado ou token inválido/expirado (`code` típico `NAO_AUTENTICADO`).
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+Forbidden:
+  description: Autenticado, mas sem o papel necessário (`code` típico `SEM_PERMISSAO`).
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+NotFound:
+  description: Recurso não encontrado (`code` típico `RECURSO_NAO_ENCONTRADO`). Inclui recursos de outro tenant.
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+Conflict:
+  description: Conflito de estado (versão, duplicidade ou idempotência em andamento).
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+UnprocessableEntity:
+  description: Regra de negócio violada. O `code` identifica a regra.
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem
+TooManyRequests:
+  description: Limite de requisições excedido.
+  headers:
+    X-Correlation-Id:
+      $ref: ./headers.yaml#/CorrelationId
+    Retry-After:
+      $ref: ./headers.yaml#/RetryAfter
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/common.yaml#/Problem

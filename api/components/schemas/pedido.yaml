@@ -1,0 +1,133 @@
+StatusPedido:
+  type: string
+  enum: [ENVIADO_COPA, EM_PREPARO, PRONTO, ENTREGUE, CANCELADO]
+OrigemPedido:
+  type: string
+  enum: [GARCOM, CLIENTE]
+ItemPedido:
+  type: object
+  required: [produtoId, posicao, nome, precoUnitario, quantidade, subtotal, observacao]
+  properties:
+    produtoId:
+      type: string
+      format: uuid
+    posicao:
+      type: integer
+      minimum: 1
+    nome:
+      type: string
+      description: Nome do produto no momento do pedido (cópia).
+    precoUnitario:
+      description: Preço do produto no momento do pedido (cópia).
+      $ref: ./common.yaml#/Decimal
+    quantidade:
+      type: integer
+      minimum: 1
+      maximum: 99
+    subtotal:
+      description: Preço unitário vezes quantidade.
+      $ref: ./common.yaml#/Decimal
+    observacao:
+      type: [string, 'null']
+      maxLength: 200
+ItemPedidoCriacao:
+  type: object
+  required: [produtoId, quantidade]
+  properties:
+    produtoId:
+      type: string
+      format: uuid
+    quantidade:
+      type: integer
+      minimum: 1
+      maximum: 99
+    observacao:
+      type: string
+      maxLength: 200
+Pedido:
+  type: object
+  description: O status existe somente no pedido; itens não têm status.
+  required:
+    - id
+    - comandaId
+    - mesaId
+    - rodada
+    - status
+    - origem
+    - observacao
+    - itens
+    - total
+    - criadoPor
+    - criadoEm
+    - atualizadoEm
+    - pedidoVersion
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    comandaId:
+      type: string
+      format: uuid
+    mesaId:
+      type: string
+      format: uuid
+    rodada:
+      type: integer
+      minimum: 1
+      description: Sequência do pedido dentro da comanda ("Mesa 5, rodada 2").
+    status:
+      $ref: '#/StatusPedido'
+    origem:
+      $ref: '#/OrigemPedido'
+    observacao:
+      type: [string, 'null']
+      maxLength: 200
+    itens:
+      type: array
+      items:
+        $ref: '#/ItemPedido'
+    total:
+      description: Soma dos subtotais dos itens.
+      $ref: ./common.yaml#/Decimal
+    criadoPor:
+      type: [string, 'null']
+      format: uuid
+      description: Usuário que criou o pedido; nulo quando a origem for `CLIENTE`.
+    criadoEm:
+      type: string
+      format: date-time
+    atualizadoEm:
+      type: string
+      format: date-time
+    pedidoVersion:
+      type: integer
+      format: int64
+      minimum: 0
+      description: |
+        Versão monotônica do pedido (a mesma `pedidoVersion` dos eventos). O cliente descarta eventos
+        com versão menor ou igual à última vista.
+PedidoCriacao:
+  type: object
+  description: O pedido é criado já em `ENVIADO_COPA`. Novos itens para a mesma comanda viram um novo pedido (rodada).
+  required: [itens]
+  properties:
+    itens:
+      type: array
+      minItems: 1
+      maxItems: 100
+      items:
+        $ref: '#/ItemPedidoCriacao'
+    observacao:
+      type: string
+      maxLength: 200
+PedidoPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Pedido'

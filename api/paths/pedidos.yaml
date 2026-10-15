@@ -1,0 +1,247 @@
+criar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ComandaId
+  post:
+    tags: [pedidos]
+    operationId: criarPedido
+    summary: Cria um pedido e o envia à copa
+    description: |
+      O pedido nasce em `ENVIADO_COPA` e recebe a próxima `rodada` da comanda. Itens guardam cópia do nome
+      e do preço do produto no momento do pedido. Idempotente por `Idempotency-Key`.
+    x-roles: [GARCOM, ADMIN]
+    parameters:
+      - $ref: ../components/parameters.yaml#/IdempotencyKey
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/pedido.yaml#/PedidoCriacao
+    responses:
+      '201':
+        description: Pedido criado (ou resposta original, em caso de repetição idempotente).
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: Requisição com a mesma `Idempotency-Key` ainda em processamento (`IDEMPOTENCY_KEY_EM_PROCESSAMENTO`) ou conflito de versão (`CONFLITO_DE_VERSAO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: |
+          Regra violada: comanda fechada (`COMANDA_FECHADA`), produto inexistente (`PRODUTO_NAO_ENCONTRADO`),
+          produto indisponível ou arquivado (`PRODUTO_INDISPONIVEL`) ou chave de idempotência reutilizada
+          com corpo diferente (`IDEMPOTENCY_KEY_REUSADA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+colecao:
+  get:
+    tags: [pedidos]
+    operationId: listarPedidos
+    summary: Lista pedidos
+    description: |
+      Ordenados por `criadoEm` crescente (fila FIFO da copa). A fila da copa é
+      `status=ENVIADO_COPA,EM_PREPARO`.
+    x-roles: [ADMIN, GARCOM, COPA]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+      - name: status
+        in: query
+        description: Um ou mais status, separados por vírgula.
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            $ref: ../components/schemas/pedido.yaml#/StatusPedido
+      - name: comandaId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: mesaId
+        in: query
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Página de pedidos.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/PedidoPage
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/PedidoId
+  get:
+    tags: [pedidos]
+    operationId: obterPedido
+    summary: Obtém um pedido
+    x-roles: [ADMIN, GARCOM, COPA]
+    responses:
+      '200':
+        description: Pedido.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+iniciarPreparo:
+  parameters:
+    - $ref: ../components/parameters.yaml#/PedidoId
+  post:
+    tags: [pedidos]
+    operationId: iniciarPreparoPedido
+    summary: Inicia o preparo (ENVIADO_COPA para EM_PREPARO)
+    description: Repetir a ação com o pedido já em `EM_PREPARO` retorna 200 com o recurso atual.
+    x-roles: [COPA]
+    responses:
+      '200':
+        description: Pedido em preparo.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        $ref: ../components/responses.yaml#/Conflict
+      '422':
+        $ref: ../components/responses.yaml#/UnprocessableEntity
+marcarPronto:
+  parameters:
+    - $ref: ../components/parameters.yaml#/PedidoId
+  post:
+    tags: [pedidos]
+    operationId: marcarPedidoPronto
+    summary: Marca como pronto (EM_PREPARO para PRONTO)
+    description: Repetir a ação com o pedido já em `PRONTO` retorna 200 com o recurso atual.
+    x-roles: [COPA]
+    responses:
+      '200':
+        description: Pedido pronto.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        $ref: ../components/responses.yaml#/Conflict
+      '422':
+        $ref: ../components/responses.yaml#/UnprocessableEntity
+entregar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/PedidoId
+  post:
+    tags: [pedidos]
+    operationId: entregarPedido
+    summary: Marca como entregue (PRONTO para ENTREGUE)
+    description: Repetir a ação com o pedido já em `ENTREGUE` retorna 200 com o recurso atual.
+    x-roles: [GARCOM]
+    responses:
+      '200':
+        description: Pedido entregue.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        $ref: ../components/responses.yaml#/Conflict
+      '422':
+        $ref: ../components/responses.yaml#/UnprocessableEntity
+cancelar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/PedidoId
+  post:
+    tags: [pedidos]
+    operationId: cancelarPedido
+    summary: Cancela o pedido inteiro (somente em ENVIADO_COPA)
+    description: Repetir a ação com o pedido já em `CANCELADO` retorna 200 com o recurso atual.
+    x-roles: [GARCOM, ADMIN]
+    responses:
+      '200':
+        description: Pedido cancelado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/pedido.yaml#/Pedido
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        $ref: ../components/responses.yaml#/Conflict
+      '422':
+        $ref: ../components/responses.yaml#/UnprocessableEntity

@@ -1,0 +1,194 @@
+colecao:
+  get:
+    tags: [comandas]
+    operationId: listarComandas
+    summary: Lista comandas
+    description: Ordenadas por abertura, da mais recente para a mais antiga.
+    x-roles: [ADMIN, GARCOM]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+      - name: status
+        in: query
+        schema:
+          $ref: ../components/schemas/comanda.yaml#/StatusComanda
+      - name: mesaId
+        in: query
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Página de comandas.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/comanda.yaml#/ComandaPage
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [comandas]
+    operationId: abrirComanda
+    summary: Abre uma comanda em uma mesa
+    x-roles: [ADMIN, GARCOM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/comanda.yaml#/ComandaAbertura
+    responses:
+      '201':
+        description: Comanda aberta.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/comanda.yaml#/Comanda
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '409':
+        description: A mesa já tem comanda aberta (`MESA_JA_TEM_COMANDA_ABERTA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Mesa inexistente (`MESA_NAO_ENCONTRADA`) ou inativa (`MESA_INATIVA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ComandaId
+  get:
+    tags: [comandas]
+    operationId: obterComanda
+    summary: Obtém uma comanda
+    x-roles: [ADMIN, GARCOM]
+    responses:
+      '200':
+        description: Comanda.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/comanda.yaml#/Comanda
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+fechar:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ComandaId
+  post:
+    tags: [comandas]
+    operationId: fecharComanda
+    summary: Fecha uma comanda
+    description: |
+      Exige todos os pedidos em `ENTREGUE` ou `CANCELADO`. Grava o total no fechamento e libera a mesa.
+      Não há pagamento nesta versão. Fechar uma comanda já fechada retorna `422` (`COMANDA_FECHADA`).
+    x-roles: [ADMIN, GARCOM]
+    responses:
+      '200':
+        description: Comanda fechada.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/comanda.yaml#/Comanda
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        $ref: ../components/responses.yaml#/Conflict
+      '422':
+        description: Há pedidos pendentes (`COMANDA_COM_PEDIDOS_PENDENTES`) ou a comanda já está fechada (`COMANDA_FECHADA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+transferirMesa:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ComandaId
+  post:
+    tags: [comandas]
+    operationId: transferirMesaComanda
+    summary: Transfere a comanda para outra mesa
+    x-roles: [ADMIN, GARCOM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/comanda.yaml#/TransferenciaMesa
+    responses:
+      '200':
+        description: Comanda transferida.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/comanda.yaml#/Comanda
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: A mesa de destino já tem comanda aberta (`MESA_JA_TEM_COMANDA_ABERTA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Comanda fechada (`COMANDA_FECHADA`) ou mesa de destino inexistente/inativa (`MESA_NAO_ENCONTRADA`, `MESA_INATIVA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem

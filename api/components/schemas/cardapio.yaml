@@ -1,0 +1,176 @@
+Categoria:
+  type: object
+  required: [id, nome, ordem, ativa]
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 80
+    ordem:
+      type: integer
+    ativa:
+      type: boolean
+CategoriaCriacao:
+  type: object
+  required: [nome]
+  properties:
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 80
+    ordem:
+      type: integer
+      default: 0
+CategoriaAtualizacao:
+  type: object
+  minProperties: 1
+  properties:
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 80
+    ordem:
+      type: integer
+    ativa:
+      type: boolean
+CategoriaPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Categoria'
+Produto:
+  type: object
+  required: [id, categoriaId, nome, descricao, preco, disponivel, ativo]
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    categoriaId:
+      type: string
+      format: uuid
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    descricao:
+      type: [string, 'null']
+      maxLength: 500
+    preco:
+      $ref: ./common.yaml#/Decimal
+    disponivel:
+      type: boolean
+      description: Disponibilidade operacional, por exemplo item esgotado hoje.
+    ativo:
+      type: boolean
+      description: Produto arquivado (`false`) não aparece no cardápio nem pode ser pedido.
+ProdutoCriacao:
+  type: object
+  required: [categoriaId, nome, preco]
+  properties:
+    categoriaId:
+      type: string
+      format: uuid
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    descricao:
+      type: string
+      maxLength: 500
+    preco:
+      $ref: ./common.yaml#/Decimal
+    disponivel:
+      type: boolean
+      default: true
+ProdutoAtualizacao:
+  type: object
+  minProperties: 1
+  properties:
+    categoriaId:
+      type: string
+      format: uuid
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    descricao:
+      type: [string, 'null']
+      maxLength: 500
+      description: "`null` limpa a descrição."
+    preco:
+      $ref: ./common.yaml#/Decimal
+    ativo:
+      type: boolean
+ProdutoPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Produto'
+DisponibilidadeAtualizacao:
+  type: object
+  required: [disponivel]
+  properties:
+    disponivel:
+      type: boolean
+RestauranteResumo:
+  type: object
+  required: [nome, slug]
+  properties:
+    nome:
+      type: string
+    slug:
+      type: string
+CardapioProduto:
+  type: object
+  required: [id, nome, descricao, preco, disponivel]
+  properties:
+    id:
+      type: string
+      format: uuid
+    nome:
+      type: string
+    descricao:
+      type: [string, 'null']
+    preco:
+      $ref: ./common.yaml#/Decimal
+    disponivel:
+      type: boolean
+CardapioCategoria:
+  type: object
+  required: [id, nome, produtos]
+  properties:
+    id:
+      type: string
+      format: uuid
+    nome:
+      type: string
+    produtos:
+      type: array
+      items:
+        $ref: '#/CardapioProduto'
+CardapioPublico:
+  type: object
+  description: Cardápio somente leitura. Contém apenas categorias e produtos ativos, na ordem de exibição.
+  required: [restaurante, categorias]
+  properties:
+    restaurante:
+      $ref: '#/RestauranteResumo'
+    categorias:
+      type: array
+      items:
+        $ref: '#/CardapioCategoria'

@@ -1,0 +1,172 @@
+colecao:
+  get:
+    tags: [produtos]
+    operationId: listarProdutos
+    summary: Lista produtos
+    x-roles: [ADMIN, GARCOM, COPA]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+      - name: categoriaId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: ativo
+        in: query
+        schema:
+          type: boolean
+      - name: disponivel
+        in: query
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: Página de produtos.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/ProdutoPage
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [produtos]
+    operationId: criarProduto
+    summary: Cria um produto
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/cardapio.yaml#/ProdutoCriacao
+    responses:
+      '201':
+        description: Produto criado.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Produto
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '422':
+        description: Categoria informada não existe (`CATEGORIA_NAO_ENCONTRADA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ProdutoId
+  get:
+    tags: [produtos]
+    operationId: obterProduto
+    summary: Obtém um produto
+    x-roles: [ADMIN, GARCOM, COPA]
+    responses:
+      '200':
+        description: Produto.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Produto
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+  patch:
+    tags: [produtos]
+    operationId: atualizarProduto
+    summary: Atualiza um produto (parcial)
+    description: |
+      Não há exclusão física; arquivar é `ativo=false`. Enviar `descricao` como `null` limpa a descrição.
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/cardapio.yaml#/ProdutoAtualizacao
+    responses:
+      '200':
+        description: Produto atualizado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Produto
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '422':
+        description: Categoria informada não existe (`CATEGORIA_NAO_ENCONTRADA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+disponibilidade:
+  parameters:
+    - $ref: ../components/parameters.yaml#/ProdutoId
+  patch:
+    tags: [produtos]
+    operationId: atualizarDisponibilidadeProduto
+    summary: Atualiza a disponibilidade de um produto
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/cardapio.yaml#/DisponibilidadeAtualizacao
+    responses:
+      '200':
+        description: Produto atualizado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/Produto
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound

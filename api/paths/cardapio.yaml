@@ -1,0 +1,30 @@
+publico:
+  parameters:
+    - $ref: ../components/parameters.yaml#/Slug
+  get:
+    tags: [cardapio]
+    operationId: obterCardapioPublico
+    summary: Cardápio público de um restaurante
+    description: |
+      Somente leitura e sem autenticação (destino do QR code). Retorna apenas categorias e produtos ativos.
+      O número da mesa, se vier no QR, é apenas informativo no front e não faz parte desta API.
+      O prefixo `/cardapio` é reservado para roteamento futuro ao serviço de tempo real.
+    security: []
+    responses:
+      '200':
+        description: Cardápio.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+          Cache-Control:
+            description: Resposta cacheável por curto período.
+            schema:
+              type: string
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/cardapio.yaml#/CardapioPublico
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '429':
+        $ref: ../components/responses.yaml#/TooManyRequests

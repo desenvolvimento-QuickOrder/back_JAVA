@@ -1,0 +1,142 @@
+colecao:
+  get:
+    tags: [mesas]
+    operationId: listarMesas
+    summary: Lista mesas
+    x-roles: [ADMIN, GARCOM, COPA]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+      - name: status
+        in: query
+        description: Filtra pelo status derivado da mesa.
+        schema:
+          $ref: ../components/schemas/mesa.yaml#/StatusMesa
+      - name: ativa
+        in: query
+        description: Filtra mesas ativas ou arquivadas.
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: Página de mesas.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/mesa.yaml#/MesaPage
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [mesas]
+    operationId: criarMesa
+    summary: Cria uma mesa
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/mesa.yaml#/MesaCriacao
+    responses:
+      '201':
+        description: Mesa criada.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/mesa.yaml#/Mesa
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '409':
+        description: Já existe mesa com o mesmo número (`MESA_NUMERO_DUPLICADO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+item:
+  parameters:
+    - $ref: ../components/parameters.yaml#/MesaId
+  get:
+    tags: [mesas]
+    operationId: obterMesa
+    summary: Obtém uma mesa
+    x-roles: [ADMIN, GARCOM, COPA]
+    responses:
+      '200':
+        description: Mesa.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/mesa.yaml#/Mesa
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+  patch:
+    tags: [mesas]
+    operationId: atualizarMesa
+    summary: Atualiza uma mesa (parcial)
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/mesa.yaml#/MesaAtualizacao
+    responses:
+      '200':
+        description: Mesa atualizada.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/mesa.yaml#/Mesa
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: Já existe mesa com o mesmo número (`MESA_NUMERO_DUPLICADO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Regra violada, por exemplo desativar mesa ocupada (`MESA_OCUPADA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem

@@ -1,0 +1,62 @@
+StatusMesa:
+  type: string
+  description: Derivado da comanda aberta; não é alterável diretamente.
+  enum: [LIVRE, OCUPADA]
+Mesa:
+  type: object
+  required: [id, numero, capacidade, status, ativa]
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    numero:
+      type: string
+      minLength: 1
+      maxLength: 20
+      description: Identificação da mesa, por exemplo "12", "A1" ou "Varanda 3". Única por restaurante.
+    capacidade:
+      type: integer
+      minimum: 1
+      maximum: 100
+    status:
+      $ref: '#/StatusMesa'
+    ativa:
+      type: boolean
+MesaCriacao:
+  type: object
+  required: [numero, capacidade]
+  properties:
+    numero:
+      type: string
+      minLength: 1
+      maxLength: 20
+    capacidade:
+      type: integer
+      minimum: 1
+      maximum: 100
+MesaAtualizacao:
+  type: object
+  minProperties: 1
+  properties:
+    numero:
+      type: string
+      minLength: 1
+      maxLength: 20
+    capacidade:
+      type: integer
+      minimum: 1
+      maximum: 100
+    ativa:
+      type: boolean
+      description: Desativar uma mesa ocupada retorna 422.
+MesaPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Mesa'

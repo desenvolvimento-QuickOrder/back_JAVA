@@ -1,0 +1,70 @@
+Papel:
+  type: string
+  enum: [ADMIN, GARCOM, COPA]
+Usuario:
+  type: object
+  required: [id, nome, login, papel, ativo]
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    login:
+      type: string
+      minLength: 3
+      maxLength: 80
+    papel:
+      $ref: '#/Papel'
+    ativo:
+      type: boolean
+      readOnly: true
+UsuarioCriacao:
+  type: object
+  required: [nome, login, senha, papel]
+  properties:
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    login:
+      type: string
+      pattern: '^[a-z0-9._-]{3,80}$'
+      description: Minúsculas, único por restaurante.
+    senha:
+      type: string
+      format: password
+      writeOnly: true
+      minLength: 8
+      maxLength: 128
+    papel:
+      $ref: '#/Papel'
+UsuarioAtualizacao:
+  type: object
+  minProperties: 1
+  properties:
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 120
+    papel:
+      $ref: '#/Papel'
+    senha:
+      type: string
+      format: password
+      writeOnly: true
+      minLength: 8
+      maxLength: 128
+UsuarioPage:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Usuario'

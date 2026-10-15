@@ -1,0 +1,65 @@
+Decimal:
+  type: string
+  description: Valor monetário como string decimal com duas casas, sem sinal.
+  pattern: '^\d{1,10}\.\d{2}$'
+  examples:
+    - '12.50'
+PageMeta:
+  type: object
+  required: [page, size, total]
+  properties:
+    page:
+      type: integer
+      minimum: 0
+      description: Índice da página, começando em 0.
+    size:
+      type: integer
+      minimum: 1
+      description: Itens por página.
+    total:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Total de itens que atendem ao filtro.
+ProblemFieldError:
+  type: object
+  required: [campo, mensagem]
+  properties:
+    campo:
+      type: string
+      description: Caminho do campo inválido, por exemplo `itens[0].quantidade`.
+    mensagem:
+      type: string
+Problem:
+  type: object
+  description: Erro no formato RFC 9457 (`application/problem+json`).
+  required: [title, status, code]
+  properties:
+    type:
+      type: string
+      format: uri-reference
+      default: about:blank
+    title:
+      type: string
+    status:
+      type: integer
+    detail:
+      type: string
+    instance:
+      type: string
+    code:
+      type: string
+      description: |
+        Código estável e legível por máquina. Exemplos: `VALIDACAO_INVALIDA`, `NAO_AUTENTICADO`,
+        `SEM_PERMISSAO`, `RECURSO_NAO_ENCONTRADO`, `CONFLITO_DE_VERSAO`, `LOGIN_JA_EXISTE`,
+        `MESA_JA_TEM_COMANDA_ABERTA`, `MESA_INATIVA`, `COMANDA_FECHADA`,
+        `COMANDA_COM_PEDIDOS_PENDENTES`, `PEDIDO_TRANSICAO_INVALIDA`, `PRODUTO_NAO_ENCONTRADO`,
+        `PRODUTO_INDISPONIVEL`, `IDEMPOTENCY_KEY_REUSADA`, `IDEMPOTENCY_KEY_EM_PROCESSAMENTO`,
+        `LIMITE_EXCEDIDO`. Novos códigos podem ser adicionados na v1.
+    correlationId:
+      type: string
+    errors:
+      type: array
+      description: Detalhe por campo, presente em erros de validação.
+      items:
+        $ref: '#/ProblemFieldError'

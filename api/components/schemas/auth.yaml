@@ -1,0 +1,47 @@
+LoginRequest:
+  type: object
+  required: [restaurante, login, senha]
+  properties:
+    restaurante:
+      type: string
+      maxLength: 60
+      pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+      description: |
+        Slug do restaurante, usado para resolver o tenant antes do login (o `login` é único por tenant).
+        Decisão de design pendente: pode virar opcional se o tenant passar a ser resolvido de outra forma
+        (por exemplo, subdomínio por restaurante).
+    login:
+      type: string
+      minLength: 3
+      maxLength: 80
+    senha:
+      type: string
+      format: password
+      writeOnly: true
+      minLength: 1
+      maxLength: 128
+RefreshRequest:
+  type: object
+  required: [refreshToken]
+  properties:
+    refreshToken:
+      type: string
+      minLength: 1
+      maxLength: 512
+TokenResponse:
+  type: object
+  required: [accessToken, refreshToken, tokenType, expiresIn]
+  properties:
+    accessToken:
+      type: string
+      description: JWT de acesso (curta duração).
+    refreshToken:
+      type: string
+      description: Token opaco de renovação, rotativo. Cada renovação devolve um novo.
+    tokenType:
+      type: string
+      enum: [Bearer]
+    expiresIn:
+      type: integer
+      minimum: 1
+      description: Validade do access token em segundos.

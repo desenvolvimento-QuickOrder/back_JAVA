@@ -1,0 +1,62 @@
+# Ambiente local: PostgreSQL 17, Redis 7 e o core.
+# Só a infra:        docker compose up -d postgres redis
+# Tudo (com o core): docker compose up -d --build
+# O back-node se conecta à rede "quickorder" criada aqui.
+name: quickorder
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-quickorder}
+      POSTGRES_USER: ${POSTGRES_USER:-quickorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quickorder}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Cria o papel restrito quickorder_app na primeira subida do volume.
+      - ./infra/db/bootstrap-dev.sql:/docker-entrypoint-initdb.d/00-bootstrap-dev.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  core:
+    build:
+      context: .
+      dockerfile: core/Dockerfile
+    image: quickorder-core:local
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-quickorder}
+      DB_APP_USER: quickorder_app
+      DB_APP_PASSWORD: quickorder_app_dev
+      DB_MIGRATION_USER: ${POSTGRES_USER:-quickorder}
+      DB_MIGRATION_PASSWORD: ${POSTGRES_PASSWORD:-quickorder}
+      REDIS_URL: redis://redis:6379
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: logstash
+    ports:
+      - "${CORE_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+
+networks:
+  default:
+    name: quickorder

@@ -1,0 +1,44 @@
+# Valores padrão servem só para desenvolvimento local; em outros ambientes tudo vem de variáveis.
+spring:
+  application:
+    name: quickorder-core
+  threads:
+    virtual:
+      enabled: true
+
+  # A aplicação conecta com o papel restrito (sem BYPASSRLS, não é dono das tabelas).
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/quickorder}
+    username: ${DB_APP_USER:quickorder_app}
+    password: ${DB_APP_PASSWORD:quickorder_app_dev}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+
+  # O Flyway roda com o dono do schema.
+  flyway:
+    user: ${DB_MIGRATION_USER:quickorder}
+    password: ${DB_MIGRATION_PASSWORD:quickorder}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
