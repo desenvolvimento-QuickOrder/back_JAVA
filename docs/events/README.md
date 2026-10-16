@@ -1,7 +1,7 @@
 # Eventos do core
 
 Contrato entre o core (publica) e o back-node (consome). Detalhes e decisões em
-`quickorder-definicoes-arquitetura.md`, seção 7.
+[`docs/arquitetura.md`](../arquitetura.md), seção 7.
 
 - Broker: Redis Streams, um stream por agregado (`events:pedido`, `events:mesa`), consumer group `realtime`.
 - Envelope: `eventId`, `tipo`, `schemaVersion`, `tenantId`, `payload`. Mudanças só aditivas.
