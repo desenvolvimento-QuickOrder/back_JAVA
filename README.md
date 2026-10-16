@@ -210,6 +210,38 @@ O `.env` não é versionado. Nenhum segredo real deve entrar no repositório.
 
 ## Banco de dados e multi-tenancy
 
+### Modelo de dados
+
+Relacionamentos da migration `V1__schema_inicial.sql`. Toda tabela, exceto `restaurante`, tem
+`restaurante_id`, e as FKs entre tabelas de negócio são compostas (`restaurante_id`, `id`), o que
+impede referenciar uma linha de outro restaurante.
+
+```mermaid
+erDiagram
+    RESTAURANTE ||--o{ MESA : possui
+    RESTAURANTE ||--o{ CATEGORIA : possui
+    RESTAURANTE ||--o{ USUARIO : possui
+    CATEGORIA ||--o{ PRODUTO : agrupa
+    MESA ||--o{ COMANDA : recebe
+    USUARIO ||--o{ COMANDA : abre
+    USUARIO ||--o{ REFRESH_TOKEN : possui
+    USUARIO |o--o{ PEDIDO : cria
+    COMANDA ||--o{ PEDIDO : contem
+    PEDIDO ||--o{ ITEM_PEDIDO : tem
+    PRODUTO ||--o{ ITEM_PEDIDO : "referenciado em"
+    PEDIDO ||--o{ PEDIDO_STATUS_HISTORICO : registra
+    USUARIO |o--o{ PEDIDO_STATUS_HISTORICO : executa
+```
+
+- `login` é único por restaurante (`restaurante_id`, `login`).
+- Uma comanda aberta por mesa (índice único parcial `uq_comanda_mesa_aberta`).
+- `pedido.criado_por` é opcional porque um pedido de origem `CLIENTE` (futuro) não tem usuário.
+- `item_pedido` guarda cópia de `nome_produto` e `preco_unitario`; `subtotal` é coluna gerada.
+- Tabelas técnicas fora do diagrama: `outbox` (eventos a publicar) e `idempotency_key`
+  (chaves de criação de pedido, com referência opcional ao pedido criado).
+
+### Isolamento por tenant
+
 - Toda tabela de negócio tem `restaurante_id` e **RLS** ligado. A policy compara a coluna com
   `nullif(current_setting('app.tenant_id', true), '')::uuid`: sem tenant definido, nenhuma linha
   aparece e nenhum insert passa (falha fechada).
