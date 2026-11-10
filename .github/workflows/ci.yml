@@ -6,35 +6,144 @@ on:
       - main
   pull_request:
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+permissions:
+  contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
+      - name: Baixar o código
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Configurar Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
 
-      - name: Build e testes com Maven
-        run: mvn -B -ntp clean verify
+      - name: Verificar formatação e executar testes
+        run: ./mvnw -B -ntp spotless:check verify
 
-      - name: Publicar relatório de testes
+      - name: Publicar relatórios de testes
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: surefire-reports
+          name: relatorios-de-testes
           path: |
-            **/target/surefire-reports/**
-            **/target/failsafe-reports/**
+            core/target/surefire-reports/**
+            core/target/failsafe-reports/**
           if-no-files-found: ignore
 
-      - name: Build da imagem Docker
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: cobertura
+          path: core/target/site/jacoco-merged
+          if-no-files-found: ignore
+
+      - name: Resumir cobertura
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report = Path("core/target/site/jacoco-merged/jacoco.xml")
+          if not report.exists():
+              summary = "O relatório de cobertura não foi gerado."
+          else:
+              counters = {
+                  counter.attrib["type"]: counter.attrib
+                  for counter in ET.parse(report).getroot().findall("counter")
+              }
+
+              def percentage(counter_type):
+                  counter = counters.get(counter_type)
+                  if counter is None:
+                      return "—"
+                  covered = int(counter["covered"])
+                  missed = int(counter["missed"])
+                  total = covered + missed
+                  return f"{covered / total * 100:.1f}%" if total else "—"
+
+              summary = (
+                  "| Métrica | Cobertura |\n|---|---:|\n"
+                  f"| Linhas | {percentage('LINE')} |\n"
+                  f"| Ramos | {percentage('BRANCH')} |"
+              )
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as output:
+              output.write(summary + "\n")
+          PY
+
+  contrato:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o histórico completo
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+
+      - name: Empacotar o contrato
+        run: |
+          mkdir -p target/openapi
+          npx --yes @redocly/cli@2.72.0 bundle api/openapi.yaml -o target/openapi/openapi.bundled.yaml
+
+      - name: Validar o contrato
+        run: npx --yes @stoplight/spectral-cli@6.17.0 lint target/openapi/openapi.bundled.yaml --ruleset .spectral.yaml --fail-severity=error
+
+      - name: Confirmar a regra de papéis com o fixture
+        run: |
+          set +e
+          npx --yes @stoplight/spectral-cli@6.17.0 lint api/spectral-fixtures/operacao-sem-papel.yaml --ruleset .spectral.yaml --fail-severity=error > target/openapi/spectral-fixture.log 2>&1
+          status=$?
+          set -e
+          cat target/openapi/spectral-fixture.log
+          if [ "$status" -eq 0 ]; then
+            echo "::error::O fixture sem papel deveria falhar na validação Spectral."
+            exit 1
+          fi
+          if ! grep -q 'operacao-com-papeis-ou-publica' target/openapi/spectral-fixture.log; then
+            echo "::error::O fixture falhou sem acionar a regra operacao-com-papeis-ou-publica."
+            exit 1
+          fi
+
+      - name: Baixar o contrato da base
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - name: Verificar compatibilidade do contrato
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ ! -f base/api/openapi.yaml ]; then
+            echo "Contrato OpenAPI ausente na base; comparação com oasdiff ignorada."
+            exit 0
+          fi
+          mkdir -p target/openapi/base
+          npx --yes @redocly/cli@2.72.0 bundle base/api/openapi.yaml -o target/openapi/base/openapi.bundled.yaml
+          docker run --rm -v "$PWD:/w" -w /w tufin/oasdiff:v1.35.0 breaking target/openapi/base/openapi.bundled.yaml target/openapi/openapi.bundled.yaml --fail-on ERR
+
+  imagem:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+
+      - name: Construir a imagem
         run: docker build -f core/Dockerfile -t quickorder-core:ci .

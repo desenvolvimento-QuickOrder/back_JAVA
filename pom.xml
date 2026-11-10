@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.1</version>
+    <version>4.1.2</version>
     <relativePath/>
   </parent>
 
@@ -24,6 +24,37 @@
 
   <properties>
     <java.version>25</java.version>
+    <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-modulith.version>2.1.2</spring-modulith.version>
+    <spotless.version>3.10.4</spotless.version>
+    <google-java-format.version>1.36.1</google-java-format.version>
+    <openapi-generator.version>7.26.0</openapi-generator.version>
+    <jackson-databind-nullable.version>0.2.13</jackson-databind-nullable.version>
+    <jacoco.version>0.8.16</jacoco.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.modulith</groupId>
+        <artifactId>spring-modulith-bom</artifactId>
+        <version>${spring-modulith.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

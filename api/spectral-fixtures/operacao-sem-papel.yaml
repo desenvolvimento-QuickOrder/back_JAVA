@@ -1,0 +1,10 @@
+openapi: 3.1.0
+info:
+  title: Fixture de operação sem papel
+  version: 1.0.0
+paths:
+  /recurso:
+    get:
+      responses:
+        "200":
+          description: Sucesso
