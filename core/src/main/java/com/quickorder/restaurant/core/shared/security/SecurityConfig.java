@@ -10,8 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Cadeia de segurança da base: stateless, sem sessão, sem login por formulário ou basic.
  *
- * <p>Libera apenas {@code /actuator/health/**} e {@code /actuator/info}; todo o resto é
- * negado até o módulo {@code equipe} configurar a validação do JWT.
+ * <p>Libera apenas {@code /actuator/health/**} e {@code /actuator/info}; todo o resto é negado até
+ * o módulo {@code equipe} configurar a validação do JWT.
  */
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
