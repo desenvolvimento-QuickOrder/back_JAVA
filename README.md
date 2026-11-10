@@ -184,8 +184,7 @@ Os padrões do `application.yml` já apontam para `localhost`.
 
 ```bash
 ./mvnw spotless:apply                                # formata o código
-./mvnw -B verify                                     # compila e roda os testes
-./mvnw -pl core -DskipTests=false verify              # inclui os *IT com Docker disponível
+./mvnw -B spotless:check verify                      # formatação, testes unitários e *IT (exige Docker)
 docker build -f core/Dockerfile -t quickorder-core:local .
 ```
 

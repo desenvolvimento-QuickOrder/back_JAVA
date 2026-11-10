@@ -115,7 +115,7 @@ jobs:
             echo "::error::O fixture sem papel deveria falhar na validação Spectral."
             exit 1
           fi
-          if ! rg -q 'operacao-com-papeis-ou-publica' target/openapi/spectral-fixture.log; then
+          if ! grep -q 'operacao-com-papeis-ou-publica' target/openapi/spectral-fixture.log; then
             echo "::error::O fixture falhou sem acionar a regra operacao-com-papeis-ou-publica."
             exit 1
           fi
