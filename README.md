@@ -59,7 +59,7 @@ flowchart LR
 | Item | Versão |
 |---|---|
 | Java | 25 (LTS) |
-| Spring Boot | 4.1.1 (Web MVC, Security, OAuth2 Resource Server, Data JPA, Data Redis, Actuator, Validation) |
+| Spring Boot | 4.1.2 (Web MVC, Security, OAuth2 Resource Server, Data JPA, Data Redis, Actuator, Validation) |
 | Banco | PostgreSQL 17 |
 | Migrations | Flyway |
 | Eventos | Redis 7 (Streams) |
@@ -180,11 +180,22 @@ mvn -pl core -am spring-boot:run
 
 Os padrões do `application.yml` já apontam para `localhost`.
 
-### Build e testes
+### Build e qualidade
 
 ```bash
-mvn -B verify                                        # compila e roda os testes
+./mvnw spotless:apply                                # formata o código
+./mvnw -B verify                                     # compila e roda os testes
+./mvnw -pl core -DskipTests=false verify              # inclui os *IT com Docker disponível
 docker build -f core/Dockerfile -t quickorder-core:local .
+```
+
+A cobertura mesclada fica em `core/target/site/jacoco-merged`.
+
+Para validar o contrato:
+
+```bash
+npx --yes @redocly/cli@2.72.0 bundle api/openapi.yaml -o target/openapi/openapi.bundled.yaml
+npx --yes @stoplight/spectral-cli@6.17.0 lint target/openapi/openapi.bundled.yaml --ruleset .spectral.yaml --fail-severity=error
 ```
 
 ## Variáveis de ambiente
@@ -331,7 +342,7 @@ Contrato completo em [`docs/events`](docs/events/README.md).
 
 ## CI/CD e deploy
 
-Planejado (ainda não implementado neste repositório), conforme `docs/arquitetura.md`:
+Conforme `docs/arquitetura.md`:
 
 - **CI (GitHub Actions)** em PR e push na `main`: Temurin 25 com cache Maven,
   `./mvnw -B -ntp spotless:check verify`, relatórios de teste e cobertura, Spectral e oasdiff no
@@ -341,14 +352,15 @@ Planejado (ainda não implementado neste repositório), conforme `docs/arquitetu
 
 ## Próximos passos
 
-- [ ] Maven Wrapper (`mvn wrapper:wrapper`; depois `git update-index --chmod=+x mvnw`).
-- [ ] Pipeline de CI no GitHub Actions.
+- [x] Maven Wrapper (`mvn wrapper:wrapper`; depois `git update-index --chmod=+x mvnw`).
+- [x] Pipeline de CI no GitHub Actions.
 - [ ] Base do `shared`: Problem Details, `correlationId`, `TenantContext` e `set_config` por
       transação, CORS, `ClientIpResolver`.
+- [x] Base de testes de integração com Testcontainers.
 - [ ] Testes de integração com Testcontainers, incluindo o **teste de isolamento entre tenants**
       rodando com o papel restrito.
-- [ ] Spring Modulith para verificar as fronteiras dos módulos.
-- [ ] Geração das interfaces a partir do OpenAPI.
+- [x] Spring Modulith para verificar as fronteiras dos módulos.
+- [x] Geração das interfaces a partir do OpenAPI.
 - [ ] `render.yaml` e pipeline de deploy.
 - [ ] AOT cache do JDK 25 para reduzir o cold start.
 
@@ -358,4 +370,3 @@ Planejado (ainda não implementado neste repositório), conforme `docs/arquitetu
 - [`docs/events`](docs/events/README.md): contrato dos eventos.
 - [`api/openapi.yaml`](api/openapi.yaml): contrato HTTP.
 - [`back-node`](../back-node): serviço de tempo real.
-
