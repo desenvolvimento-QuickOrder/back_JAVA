@@ -5,6 +5,11 @@ spring:
   threads:
     virtual:
       enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
 
   # A aplicação conecta com o papel restrito (sem BYPASSRLS, não é dono das tabelas).
   datasource:
@@ -31,14 +36,29 @@ spring:
 server:
   port: ${PORT:8080}
   shutdown: graceful
+  forward-headers-strategy: none
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health
   endpoint:
     health:
       probes:
         enabled: true
       show-details: never
+
+logging:
+  structured:
+    format:
+      console: logstash
+
+quickorder:
+  cors:
+    origens: ${QUICKORDER_CORS_ORIGINS:}
+  proxy:
+    posicao-ip-da-direita: ${QUICKORDER_PROXY_POSICAO_IP_DA_DIREITA:0}
+  seguranca:
+    guarda-papel:
+      habilitada: ${QUICKORDER_GUARDA_PAPEL_HABILITADA:true}

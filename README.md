@@ -175,10 +175,13 @@ O compose cria a rede Docker `quickorder`, usada pelo `back-node` para alcançar
 Com a infraestrutura de pé (`docker compose up -d postgres redis`):
 
 ```bash
-mvn -pl core -am spring-boot:run
+JWT_PUBLIC_KEY_LOCATION=file:/caminho/configurado/chave-publica.pem \
+QUICKORDER_CORS_ORIGINS=http://localhost:3000 \
+./mvnw -pl core -am spring-boot:run
 ```
 
-Os padrões do `application.yml` já apontam para `localhost`.
+O caminho da chave pública precisa apontar para a chave RS256 provisionada para o ambiente. Até a
+Issue 2, a aplicação não fornece uma chave pública padrão.
 
 ### Build e qualidade
 
@@ -212,6 +215,10 @@ desenvolvimento local.
 | `DB_POOL_SIZE` | `5` | tamanho do pool Hikari |
 | `REDIS_URL` | `redis://localhost:6379` | Redis (Streams) |
 | `PORT` | `8080` | porta HTTP |
+| `JWT_PUBLIC_KEY_LOCATION` | sem padrão | localização da chave pública RS256 usada para validar JWT |
+| `QUICKORDER_CORS_ORIGINS` | vazio | origens CORS permitidas, separadas por vírgulas; obrigatório fora de `dev`/`test` |
+| `QUICKORDER_GUARDA_PAPEL_HABILITADA` | `true` | `quickorder.seguranca.guarda-papel.habilitada`; habilita a guarda de superusuário e `BYPASSRLS` |
+| `QUICKORDER_PROXY_POSICAO_IP_DA_DIREITA` | `0` | `quickorder.proxy.posicao-ip-da-direita`; posição do IP confiável a partir da direita em `X-Forwarded-For`; `0` usa `remoteAddr` |
 
 Usadas só pelo `docker-compose.yml`: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`,
 `POSTGRES_PORT`, `REDIS_PORT`, `CORE_PORT` (veja `.env.example`).
@@ -322,14 +329,18 @@ Contrato completo em [`docs/events`](docs/events/README.md).
   exposta em `/.well-known/jwks.json` para o `back-node` validar localmente.
 - Refresh token opaco, com rotação e detecção de reuso.
 - Chave privada do JWT sempre fora do repositório.
-- **Estado atual:** a `SecurityConfig` nega todas as rotas, exceto `/actuator/health` e
-  `/actuator/info`, até o módulo `equipe` implementar a validação do JWT.
+- A `SecurityConfig` nega todas as rotas por padrão e libera apenas `/actuator/health` e
+  `/actuator/health/**`. A validação RS256 depende de `JWT_PUBLIC_KEY_LOCATION` até a Issue 2.
+- Fora dos perfis `dev`/`test`, `QUICKORDER_CORS_ORIGINS` precisa listar as origens permitidas.
 
 ## Observabilidade
 
-- `GET /actuator/health` (com probes `liveness` e `readiness`), `/actuator/info` e
-  `/actuator/prometheus`. Nenhum outro endpoint do Actuator é exposto.
-- Logs JSON com `correlationId` e `tenant_id` (o compose já liga o formato estruturado).
+- Somente `GET /actuator/health` e `/actuator/health/**` são expostos, com probes `liveness` e
+  `readiness`.
+- Logs estruturados em formato Logstash incluem `correlationId` e `tenant_id`.
+- `ClientIpResolver` usa `remoteAddr` por padrão. Para uma cadeia de proxies confiáveis, configure
+  `QUICKORDER_PROXY_POSICAO_IP_DA_DIREITA`; o servidor não interpreta automaticamente headers
+  encaminhados.
 
 ## Convenções
 
@@ -353,10 +364,10 @@ Conforme `docs/arquitetura.md`:
 
 - [x] Maven Wrapper (`mvn wrapper:wrapper`; depois `git update-index --chmod=+x mvnw`).
 - [x] Pipeline de CI no GitHub Actions.
-- [ ] Base do `shared`: Problem Details, `correlationId`, `TenantContext` e `set_config` por
+- [x] Base do `shared`: Problem Details, `correlationId`, `TenantContext` e `set_config` por
       transação, CORS, `ClientIpResolver`.
 - [x] Base de testes de integração com Testcontainers.
-- [ ] Testes de integração com Testcontainers, incluindo o **teste de isolamento entre tenants**
+- [x] Testes de integração com Testcontainers, incluindo o **teste de isolamento entre tenants**
       rodando com o papel restrito.
 - [x] Spring Modulith para verificar as fronteiras dos módulos.
 - [x] Geração das interfaces a partir do OpenAPI.
@@ -366,6 +377,8 @@ Conforme `docs/arquitetura.md`:
 ## Documentação
 
 - [`docs/arquitetura.md`](docs/arquitetura.md): todas as decisões de arquitetura e setup.
+- [`docs/spike-set-config.md`](docs/spike-set-config.md): resultado do spike de tenant por transação.
 - [`docs/events`](docs/events/README.md): contrato dos eventos.
 - [`api/openapi.yaml`](api/openapi.yaml): contrato HTTP.
 - [`back-node`](../back-node): serviço de tempo real.
+

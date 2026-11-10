@@ -55,7 +55,9 @@ Problem:
         `MESA_JA_TEM_COMANDA_ABERTA`, `MESA_INATIVA`, `COMANDA_FECHADA`,
         `COMANDA_COM_PEDIDOS_PENDENTES`, `PEDIDO_TRANSICAO_INVALIDA`, `PRODUTO_NAO_ENCONTRADO`,
         `PRODUTO_INDISPONIVEL`, `IDEMPOTENCY_KEY_REUSADA`, `IDEMPOTENCY_KEY_EM_PROCESSAMENTO`,
-        `LIMITE_EXCEDIDO`. Novos códigos podem ser adicionados na v1.
+        `LIMITE_EXCEDIDO`, `REQUISICAO_INVALIDA`, `METODO_NAO_SUPORTADO`,
+        `MIDIA_NAO_SUPORTADA`, `ERRO_INTERNO` e `CREDENCIAIS_INVALIDAS`. Novos códigos podem ser
+        adicionados na v1.
     correlationId:
       type: string
     errors:
