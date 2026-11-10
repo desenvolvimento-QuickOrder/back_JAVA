@@ -9,6 +9,7 @@ RUN --mount=type=cache,target=/root/.m2/repository \
     --mount=type=secret,id=maven-settings,target=/root/.m2/settings.xml \
     mvn -B -ntp -pl core -am dependency:go-offline
 COPY core/src core/src
+COPY api api
 RUN --mount=type=cache,target=/root/.m2/repository \
     --mount=type=secret,id=maven-settings,target=/root/.m2/settings.xml \
     mvn -B -ntp -pl core -am package -DskipTests

@@ -1,0 +1,17 @@
+extends: ["spectral:oas"]
+rules:
+  operacao-com-papeis-ou-publica:
+    severity: error
+    given: "$.paths[*][get,put,post,delete,patch]"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          anyOf:
+            - required: ["x-roles"]
+            - required: ["security"]
+              properties:
+                security:
+                  type: array
+                  maxItems: 0
+    message: "Toda operação deve declarar x-roles ou security: []."

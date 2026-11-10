@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      spring:
+        patterns:
+          - "org.springframework*"
+        update-types: [minor, patch]
+      testes:
+        patterns:
+          - "org.testcontainers*"
+          - "org.junit*"
+          - "org.assertj*"
+          - "com.tngtech.archunit*"
+        update-types: [minor, patch]
+      build-plugins:
+        patterns:
+          - "org.apache.maven.plugins*"
+          - "com.diffplug.spotless*"
+          - "org.jacoco*"
+          - "org.openapitools*"
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
