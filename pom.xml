@@ -32,6 +32,7 @@
     <openapi-generator.version>7.26.0</openapi-generator.version>
     <jackson-databind-nullable.version>0.2.13</jackson-databind-nullable.version>
     <jacoco.version>0.8.16</jacoco.version>
+    <bucket4j.version>8.21.0</bucket4j.version>
   </properties>
 
   <dependencyManagement>

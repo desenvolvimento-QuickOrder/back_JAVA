@@ -4,6 +4,25 @@
 # O back-node se conecta à rede "quickorder" criada aqui.
 name: quickorder
 
+x-core-environment: &core-environment
+  SPRING_PROFILES_ACTIVE: dev
+  DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-quickorder}
+  DB_APP_USER: quickorder_app
+  DB_APP_PASSWORD: quickorder_app_dev
+  DB_MIGRATION_USER: ${POSTGRES_USER:-quickorder}
+  DB_MIGRATION_PASSWORD: ${POSTGRES_PASSWORD:-quickorder}
+  REDIS_URL: redis://redis:6379
+  LOGGING_STRUCTURED_FORMAT_CONSOLE: logstash
+  JWT_PRIVATE_KEY_LOCATION: ${JWT_PRIVATE_KEY_LOCATION:-file:/run/keys/jwt-private.pem}
+  JWT_KEY_ID: ${JWT_KEY_ID:-dev-local}
+  JWT_PREVIOUS_PUBLIC_KEY_LOCATION: ${JWT_PREVIOUS_PUBLIC_KEY_LOCATION:-}
+  JWT_PREVIOUS_KEY_ID: ${JWT_PREVIOUS_KEY_ID:-}
+  QUICKORDER_SENHA_PEPPER: ${QUICKORDER_SENHA_PEPPER:-quickorder-dev-pepper}
+  QUICKORDER_BOOTSTRAP_SLUG: ${QUICKORDER_BOOTSTRAP_SLUG:-restaurante-dev}
+  QUICKORDER_BOOTSTRAP_ADMIN_LOGIN: ${QUICKORDER_BOOTSTRAP_ADMIN_LOGIN:-}
+  QUICKORDER_BOOTSTRAP_ADMIN_SENHA: ${QUICKORDER_BOOTSTRAP_ADMIN_SENHA:-}
+  QUICKORDER_CORS_ORIGINS: ${QUICKORDER_CORS_ORIGINS:-}
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -33,26 +52,53 @@ services:
       timeout: 3s
       retries: 10
 
-  core:
+  db-migrate:
+    image: quickorder-core:local
     build:
       context: .
       dockerfile: core/Dockerfile
-    image: quickorder-core:local
+    command: ["--spring.main.web-application-type=none"]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-quickorder}
-      DB_APP_USER: quickorder_app
-      DB_APP_PASSWORD: quickorder_app_dev
-      DB_MIGRATION_USER: ${POSTGRES_USER:-quickorder}
-      DB_MIGRATION_PASSWORD: ${POSTGRES_PASSWORD:-quickorder}
-      REDIS_URL: redis://redis:6379
-      LOGGING_STRUCTURED_FORMAT_CONSOLE: logstash
+      <<: *core-environment
+      QUICKORDER_BOOTSTRAP_SLUG: ""
+      QUICKORDER_BOOTSTRAP_ADMIN_LOGIN: ""
+      QUICKORDER_BOOTSTRAP_ADMIN_SENHA: ""
+    volumes:
+      - ./.secrets:/run/keys:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  db-seed:
+    image: postgres:17-alpine
+    entrypoint: ["sh", "-c"]
+    command:
+      - "psql --set=ON_ERROR_STOP=1 --host=postgres --username=\"$$POSTGRES_USER\" --dbname=\"$$POSTGRES_DB\" --file=/seed/seed-dev.sql"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-quickorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quickorder}
+      POSTGRES_DB: ${POSTGRES_DB:-quickorder}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-quickorder}
+    volumes:
+      - ./infra/db/seed-dev.sql:/seed/seed-dev.sql:ro
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+
+  core:
+    image: quickorder-core:local
+    environment: *core-environment
     ports:
       - "${CORE_PORT:-8080}:8080"
+    volumes:
+      - ./.secrets:/run/keys:ro
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      db-seed:
+        condition: service_completed_successfully
 
 volumes:
   postgres-data:

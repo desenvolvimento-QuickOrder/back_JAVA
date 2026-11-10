@@ -248,7 +248,12 @@ class ContratoWebIT extends IntegracaoBaseIT {
     long agora = Instant.now().getEpochSecond();
     String cabecalho = codificar("{\"alg\":\"RS256\",\"typ\":\"JWT\"}");
     String payload =
-        codificar("{\"sub\":\"usuario-teste\",\"iat\":" + agora + ",\"exp\":" + (agora + 60) + "}");
+        codificar(
+            "{\"iss\":\"https://quickorder\",\"sub\":\"usuario-teste\",\"iat\":"
+                + agora
+                + ",\"exp\":"
+                + (agora + 60)
+                + "}");
     String assinaturaBase = cabecalho + "." + payload;
 
     Signature assinatura = Signature.getInstance("SHA256withRSA");

@@ -24,7 +24,14 @@ login:
       '400':
         $ref: ../components/responses.yaml#/BadRequest
       '401':
-        $ref: ../components/responses.yaml#/Unauthorized
+        description: Credenciais inválidas.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
       '429':
         $ref: ../components/responses.yaml#/TooManyRequests
 refresh:
@@ -65,7 +72,7 @@ logout:
     operationId: encerrarSessao
     summary: Encerra a sessão
     description: Revoga a família do refresh token informado.
-    x-roles: [ADMIN, GARCOM, COPA]
+    security: []
     requestBody:
       required: true
       content:
@@ -80,5 +87,3 @@ logout:
             $ref: ../components/headers.yaml#/CorrelationId
       '400':
         $ref: ../components/responses.yaml#/BadRequest
-      '401':
-        $ref: ../components/responses.yaml#/Unauthorized
