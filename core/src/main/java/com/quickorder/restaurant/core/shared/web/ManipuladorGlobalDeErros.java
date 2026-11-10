@@ -127,12 +127,14 @@ public class ManipuladorGlobalDeErros extends ResponseEntityExceptionHandler {
     ProblemDetail problem =
         problema(
             httpStatus, codeDaRequisicao(exception, status), detalheDaRequisicao(status), erros);
-    headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+    HttpHeaders cabecalhosDaResposta = new HttpHeaders();
+    cabecalhosDaResposta.putAll(headers);
+    cabecalhosDaResposta.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
     String correlationId = correlationId(request);
     if (correlationId != null) {
-      headers.set(FiltroDeCorrelationId.NOME_DO_HEADER, correlationId);
+      cabecalhosDaResposta.set(FiltroDeCorrelationId.NOME_DO_HEADER, correlationId);
     }
-    return super.handleExceptionInternal(exception, problem, headers, status, request);
+    return super.handleExceptionInternal(exception, problem, cabecalhosDaResposta, status, request);
   }
 
   private ResponseEntity<Object> resposta(

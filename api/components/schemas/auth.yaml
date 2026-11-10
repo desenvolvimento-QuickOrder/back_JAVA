@@ -8,8 +8,6 @@ LoginRequest:
       pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
       description: |
         Slug do restaurante, usado para resolver o tenant antes do login (o `login` é único por tenant).
-        Decisão de design pendente: pode virar opcional se o tenant passar a ser resolvido de outra forma
-        (por exemplo, subdomínio por restaurante).
     login:
       type: string
       minLength: 3

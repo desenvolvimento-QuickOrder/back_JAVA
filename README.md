@@ -146,7 +146,10 @@ stateDiagram-v2
 ### Tudo com Docker
 
 ```bash
-cp .env.example .env            # opcional: os padrões já servem para desenvolvimento
+cp .env.example .env
+mkdir -p .secrets
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out .secrets/jwt-private.pem
+# configure o bootstrap do ADMIN no .env antes de subir o core
 docker compose up -d --build
 curl http://localhost:8080/actuator/health
 ```
@@ -155,9 +158,11 @@ Sobe:
 
 | Serviço | Porta | Observação |
 |---|---|---|
-| `postgres` | 5432 | roda `infra/db/bootstrap-dev.sql` na primeira subida do volume |
+| `postgres` | 5432 | cria o papel restrito via `infra/db/bootstrap-dev.sql` na primeira subida do volume |
 | `redis` | 6379 | só memória |
-| `core` | 8080 | aplica as migrations com Flyway na subida |
+| `db-migrate` | — | aplica as migrations com Flyway antes do seed de desenvolvimento |
+| `db-seed` | — | executa `infra/db/seed-dev.sql` como owner após as migrations |
+| `core` | 8080 | inicia depois do seed e exige uma chave JWT local |
 
 Comandos úteis:
 
@@ -175,13 +180,16 @@ O compose cria a rede Docker `quickorder`, usada pelo `back-node` para alcançar
 Com a infraestrutura de pé (`docker compose up -d postgres redis`):
 
 ```bash
-JWT_PUBLIC_KEY_LOCATION=file:/caminho/configurado/chave-publica.pem \
+JWT_PRIVATE_KEY_LOCATION=file:/caminho/chave-privada-pkcs8.pem \
+JWT_KEY_ID=chave-atual \
+QUICKORDER_SENHA_PEPPER='segredo-local-forte' \
 QUICKORDER_CORS_ORIGINS=http://localhost:3000 \
-./mvnw -pl core -am spring-boot:run
+./mvnw -pl core -am -Dspring-boot.run.profiles=dev spring-boot:run
 ```
 
-O caminho da chave pública precisa apontar para a chave RS256 provisionada para o ambiente. Até a
-Issue 2, a aplicação não fornece uma chave pública padrão.
+A chave privada RS256 deve estar no formato PKCS#8 e fora do repositório. Para rotação, configure
+também `JWT_PREVIOUS_PUBLIC_KEY_LOCATION` e `JWT_PREVIOUS_KEY_ID`. A chave pública atual é derivada
+da privada e as chaves públicas são publicadas em `/.well-known/jwks.json`.
 
 ### Build e qualidade
 
@@ -215,7 +223,14 @@ desenvolvimento local.
 | `DB_POOL_SIZE` | `5` | tamanho do pool Hikari |
 | `REDIS_URL` | `redis://localhost:6379` | Redis (Streams) |
 | `PORT` | `8080` | porta HTTP |
-| `JWT_PUBLIC_KEY_LOCATION` | sem padrão | localização da chave pública RS256 usada para validar JWT |
+| `JWT_PRIVATE_KEY_LOCATION` | sem padrão | localização da chave privada RSA PKCS#8 usada para assinar JWT |
+| `JWT_KEY_ID` | sem padrão | identificador da chave RS256 atual, publicado no header `kid` |
+| `JWT_PREVIOUS_PUBLIC_KEY_LOCATION` | vazio | chave pública RSA anterior aceita durante rotação |
+| `JWT_PREVIOUS_KEY_ID` | vazio | `kid` da chave pública anterior; configurar junto com a localização |
+| `QUICKORDER_SENHA_PEPPER` | chave local apenas em `dev` | segredo do HMAC-SHA256 anterior ao BCrypt; obrigatório fora de `dev`/`test` |
+| `QUICKORDER_BOOTSTRAP_SLUG` | vazio | slug já existente do restaurante para o bootstrap do ADMIN |
+| `QUICKORDER_BOOTSTRAP_ADMIN_LOGIN` | vazio | login do ADMIN inicial; usado junto com as outras variáveis de bootstrap |
+| `QUICKORDER_BOOTSTRAP_ADMIN_SENHA` | vazio | senha do ADMIN inicial; nunca registrar em logs |
 | `QUICKORDER_CORS_ORIGINS` | vazio | origens CORS permitidas, separadas por vírgulas; obrigatório fora de `dev`/`test` |
 | `QUICKORDER_GUARDA_PAPEL_HABILITADA` | `true` | `quickorder.seguranca.guarda-papel.habilitada`; habilita a guarda de superusuário e `BYPASSRLS` |
 | `QUICKORDER_PROXY_POSICAO_IP_DA_DIREITA` | `0` | `quickorder.proxy.posicao-ip-da-direita`; posição do IP confiável a partir da direita em `X-Forwarded-For`; `0` usa `remoteAddr` |
@@ -324,13 +339,14 @@ Contrato completo em [`docs/events`](docs/events/README.md).
 
 ## Segurança
 
-- Login com usuário e senha (hash BCrypt ou Argon2id) e rate limit.
-- Access token **JWT RS256** curto (~15 min) com `sub`, `roles` e `tenant_id`. A chave pública é
-  exposta em `/.well-known/jwks.json` para o `back-node` validar localmente.
-- Refresh token opaco, com rotação e detecção de reuso.
+- Login de ADMIN com HMAC-SHA256 e BCrypt, com limites por IP e por conta.
+- Access token **JWT RS256** de 15 min com `sub`, `tenant_id`, `roles`, `iss`, `iat`, `exp` e `jti`.
+  A chave pública atual e a anterior são publicadas em `/.well-known/jwks.json`.
+- Refresh token opaco de 12 h, com rotação, tolerância a concorrência e detecção de reuso.
 - Chave privada do JWT sempre fora do repositório.
 - A `SecurityConfig` nega todas as rotas por padrão e libera apenas `/actuator/health` e
-  `/actuator/health/**`. A validação RS256 depende de `JWT_PUBLIC_KEY_LOCATION` até a Issue 2.
+  `/actuator/health/**`, as rotas públicas da autenticação, o cardápio e o JWKS. A validação RS256
+  usa o conjunto de chaves em memória e valida o emissor `https://quickorder`.
 - Fora dos perfis `dev`/`test`, `QUICKORDER_CORS_ORIGINS` precisa listar as origens permitidas.
 
 ## Observabilidade

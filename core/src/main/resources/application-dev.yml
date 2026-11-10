@@ -1,0 +1,3 @@
+quickorder:
+  senha:
+    pepper: ${QUICKORDER_SENHA_PEPPER:quickorder-dev-pepper}
