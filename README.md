@@ -381,3 +381,4 @@ Conforme `docs/arquitetura.md`:
 - [`docs/events`](docs/events/README.md): contrato dos eventos.
 - [`api/openapi.yaml`](api/openapi.yaml): contrato HTTP.
 - [`back-node`](../back-node): serviço de tempo real.
+
