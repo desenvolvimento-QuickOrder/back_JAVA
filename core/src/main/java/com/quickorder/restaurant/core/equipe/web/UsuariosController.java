@@ -100,8 +100,7 @@ public class UsuariosController implements UsuariosApi {
   }
 
   @Override
-  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> desativarUsuario(
-      UUID usuarioId) {
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> desativarUsuario(UUID usuarioId) {
     return ResponseEntity.ok(resposta(desativarUsuario.executar(usuarioId)));
   }
 
