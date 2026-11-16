@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-    String detail = ex.getBindingResult().getAllErrors().stream()
-        .filter(FieldError.class::isInstance)
-        .map(FieldError.class::cast)
-        .findFirst()
-        .map(fieldError -> fieldError.getDefaultMessage())
-        .orElse("VALIDACAO_INVALIDA");
+  public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex) {
+    String detail =
+        ex.getBindingResult().getAllErrors().stream()
+            .filter(FieldError.class::isInstance)
+            .map(FieldError.class::cast)
+            .findFirst()
+            .map(fieldError -> fieldError.getDefaultMessage())
+            .orElse("VALIDACAO_INVALIDA");
 
     var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     problem.setTitle("Validação inválida");
@@ -30,7 +32,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
   }
 
-  @ExceptionHandler({ConstraintViolationException.class, HttpMessageNotReadableException.class, IllegalArgumentException.class})
+  @ExceptionHandler({
+    ConstraintViolationException.class,
+    HttpMessageNotReadableException.class,
+    IllegalArgumentException.class
+  })
   public ResponseEntity<ProblemDetail> handleBadRequest(Exception ex) {
     var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     problem.setTitle("Requisição inválida");

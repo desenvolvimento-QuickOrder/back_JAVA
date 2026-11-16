@@ -33,7 +33,8 @@ public class MesaExceptionHandler {
 
   @ExceptionHandler(MesaOcupadaException.class)
   public ResponseEntity<ProblemDetail> handleMesaOcupada(MesaOcupadaException ex) {
-    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    var problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     problem.setTitle("Regra de negócio violada");
     problem.setType(URI.create("https://quickorder.local/errors/MESA_OCUPADA"));
     problem.setProperty("code", "MESA_OCUPADA");

@@ -20,7 +20,8 @@ class AtualizarMesaUseCaseTest {
     var mesaRepository = mock(MesaRepository.class);
     var statusResolver = mock(MesaStatusResolver.class);
 
-    when(mesaRepository.findById(mesaId)).thenReturn(Optional.of(Mesa.criar("A1", 4).comStatus(MesaStatus.OCUPADA)));
+    when(mesaRepository.findById(mesaId))
+        .thenReturn(Optional.of(Mesa.criar("A1", 4).comStatus(MesaStatus.OCUPADA)));
     when(statusResolver.resolve(mesaId)).thenReturn(MesaStatus.OCUPADA);
 
     var useCase = new AtualizarMesaUseCase(mesaRepository, statusResolver);

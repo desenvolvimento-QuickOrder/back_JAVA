@@ -17,11 +17,12 @@ public class MesaStatusResolverImpl implements MesaStatusResolver {
 
   @Override
   public MesaStatus resolve(UUID mesaId) {
-    Integer count = jdbcTemplate.queryForObject(
-        "select count(*) from comanda where restaurante_id = ? and mesa_id = ? and status = 'ABERTA'",
-        Integer.class,
-        MesaEntity.DEFAULT_RESTAURANTE_ID,
-        mesaId);
+    Integer count =
+        jdbcTemplate.queryForObject(
+            "select count(*) from comanda where restaurante_id = ? and mesa_id = ? and status = 'ABERTA'",
+            Integer.class,
+            MesaEntity.DEFAULT_RESTAURANTE_ID,
+            mesaId);
     return MesaStatus.of(count != null && count > 0);
   }
 }

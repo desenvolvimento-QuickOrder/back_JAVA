@@ -21,11 +21,12 @@ public class ListarMesasUseCase {
     int pagina = page == null || page < 0 ? 0 : page;
     int tamanho = size == null || size <= 0 ? 20 : Math.min(size, 100);
 
-    List<Mesa> mesas = mesaRepository.findAll().stream()
-        .map(mesa -> mesa.comStatus(mesaStatusResolver.resolve(mesa.id())))
-        .filter(mesa -> status == null || mesa.status() == status)
-        .filter(mesa -> ativa == null || mesa.ativa().equals(ativa))
-        .toList();
+    List<Mesa> mesas =
+        mesaRepository.findAll().stream()
+            .map(mesa -> mesa.comStatus(mesaStatusResolver.resolve(mesa.id())))
+            .filter(mesa -> status == null || mesa.status() == status)
+            .filter(mesa -> ativa == null || mesa.ativa().equals(ativa))
+            .toList();
 
     int fromIndex = Math.min(pagina * tamanho, mesas.size());
     int toIndex = Math.min(fromIndex + tamanho, mesas.size());

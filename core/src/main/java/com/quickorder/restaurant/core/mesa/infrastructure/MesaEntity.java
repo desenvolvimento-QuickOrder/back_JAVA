@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(name = "mesa")
 public class MesaEntity {
 
-  public static final UUID DEFAULT_RESTAURANTE_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  public static final UUID DEFAULT_RESTAURANTE_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   @Id
   @Column(name = "id", nullable = false, columnDefinition = "uuid")
@@ -40,11 +41,9 @@ public class MesaEntity {
   @Column(name = "atualizado_em", nullable = false)
   private Instant atualizadoEm;
 
-  @Transient
-  private MesaStatus status = MesaStatus.LIVRE;
+  @Transient private MesaStatus status = MesaStatus.LIVRE;
 
-  protected MesaEntity() {
-  }
+  protected MesaEntity() {}
 
   public MesaEntity(UUID id, UUID restauranteId, String numero, Integer capacidade, Boolean ativa) {
     this.id = id;
@@ -55,7 +54,8 @@ public class MesaEntity {
   }
 
   public static MesaEntity fromDomain(Mesa mesa) {
-    return new MesaEntity(mesa.id(), DEFAULT_RESTAURANTE_ID, mesa.numero(), mesa.capacidade(), mesa.ativa());
+    return new MesaEntity(
+        mesa.id(), DEFAULT_RESTAURANTE_ID, mesa.numero(), mesa.capacidade(), mesa.ativa());
   }
 
   public Mesa toDomain() {

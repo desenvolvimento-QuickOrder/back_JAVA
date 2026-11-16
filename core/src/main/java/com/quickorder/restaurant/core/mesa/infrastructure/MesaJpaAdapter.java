@@ -33,11 +33,13 @@ public class MesaJpaAdapter implements MesaRepository {
 
   @Override
   public boolean existsByNumero(String numero) {
-    return jpaMesaRepository.existsByNumeroAndRestauranteId(numero, MesaEntity.DEFAULT_RESTAURANTE_ID);
+    return jpaMesaRepository.existsByNumeroAndRestauranteId(
+        numero, MesaEntity.DEFAULT_RESTAURANTE_ID);
   }
 
   @Override
   public boolean existsByNumeroAndIdNot(String numero, UUID id) {
-    return jpaMesaRepository.existsByNumeroAndIdNotAndRestauranteId(numero, id, MesaEntity.DEFAULT_RESTAURANTE_ID);
+    return jpaMesaRepository.existsByNumeroAndIdNotAndRestauranteId(
+        numero, id, MesaEntity.DEFAULT_RESTAURANTE_ID);
   }
 }

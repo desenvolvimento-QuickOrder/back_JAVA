@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MesaMapper {
   public MesaResponse toResponse(Mesa mesa) {
-    return new MesaResponse(mesa.id(), mesa.numero(), mesa.capacidade(), mesa.status(), mesa.ativa());
+    return new MesaResponse(
+        mesa.id(), mesa.numero(), mesa.capacidade(), mesa.status(), mesa.ativa());
   }
 }

@@ -15,17 +15,18 @@ public class AtualizarMesaUseCase {
   private final MesaRepository mesaRepository;
   private final MesaStatusResolver mesaStatusResolver;
 
-  public AtualizarMesaUseCase(MesaRepository mesaRepository, MesaStatusResolver mesaStatusResolver) {
+  public AtualizarMesaUseCase(
+      MesaRepository mesaRepository, MesaStatusResolver mesaStatusResolver) {
     this.mesaRepository = mesaRepository;
     this.mesaStatusResolver = mesaStatusResolver;
   }
 
   public Mesa execute(UUID id, String numero, Integer capacidade, Boolean ativa) {
-    var mesa = mesaRepository
-        .findById(id)
-        .orElseThrow(() -> new MesaNotFoundException(id));
+    var mesa = mesaRepository.findById(id).orElseThrow(() -> new MesaNotFoundException(id));
 
-    if (numero != null && !numero.equals(mesa.numero()) && mesaRepository.existsByNumeroAndIdNot(numero, id)) {
+    if (numero != null
+        && !numero.equals(mesa.numero())
+        && mesaRepository.existsByNumeroAndIdNot(numero, id)) {
       throw new MesaDuplicadoException(numero);
     }
 

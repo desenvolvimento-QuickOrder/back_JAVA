@@ -58,7 +58,12 @@ public class MesaController {
     MesaPage<com.quickorder.restaurant.core.mesa.domain.Mesa> pageResult =
         listarMesasUseCase.execute(page, size, status, ativa);
     var items = pageResult.items().stream().map(mesaMapper::toResponse).toList();
-    return new MesaPageResponse<>(pageResult.page(), pageResult.size(), pageResult.totalElements(), pageResult.totalPages(), items);
+    return new MesaPageResponse<>(
+        pageResult.page(),
+        pageResult.size(),
+        pageResult.totalElements(),
+        pageResult.totalPages(),
+        items);
   }
 
   @GetMapping("/{id}")
@@ -67,12 +72,10 @@ public class MesaController {
   }
 
   @PatchMapping("/{id}")
-  public MesaResponse atualizar(@PathVariable UUID id, @Valid @RequestBody MesaUpdateRequest request) {
-    var mesa = atualizarMesaUseCase.execute(
-        id,
-        request.numero(),
-        request.capacidade(),
-        request.ativa());
+  public MesaResponse atualizar(
+      @PathVariable UUID id, @Valid @RequestBody MesaUpdateRequest request) {
+    var mesa =
+        atualizarMesaUseCase.execute(id, request.numero(), request.capacidade(), request.ativa());
     return mesaMapper.toResponse(mesa);
   }
 }
