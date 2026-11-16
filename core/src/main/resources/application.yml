@@ -5,12 +5,6 @@ spring:
   threads:
     virtual:
       enabled: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
-
   # A aplicação conecta com o papel restrito (sem BYPASSRLS, não é dono das tabelas).
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/quickorder}
@@ -55,6 +49,18 @@ logging:
       console: logstash
 
 quickorder:
+  senha:
+    pepper: ${QUICKORDER_SENHA_PEPPER:}
+  jwt:
+    issuer: https://quickorder
+    private-key-location: ${JWT_PRIVATE_KEY_LOCATION:}
+    key-id: ${JWT_KEY_ID:}
+    previous-public-key-location: ${JWT_PREVIOUS_PUBLIC_KEY_LOCATION:}
+    previous-key-id: ${JWT_PREVIOUS_KEY_ID:}
+  bootstrap:
+    slug: ${QUICKORDER_BOOTSTRAP_SLUG:}
+    admin-login: ${QUICKORDER_BOOTSTRAP_ADMIN_LOGIN:}
+    admin-senha: ${QUICKORDER_BOOTSTRAP_ADMIN_SENHA:}
   cors:
     origens: ${QUICKORDER_CORS_ORIGINS:}
   proxy:
