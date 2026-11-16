@@ -4,6 +4,8 @@ import com.quickorder.restaurant.core.mesa.domain.MesaDuplicadoException;
 import com.quickorder.restaurant.core.mesa.domain.MesaNotFoundException;
 import com.quickorder.restaurant.core.mesa.domain.MesaOcupadaException;
 import java.net.URI;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(basePackages = "com.quickorder.restaurant.core.mesa.web")
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class MesaExceptionHandler {
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ProblemDetail> handleValidacaoDoDominio(IllegalArgumentException ex) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    problem.setTitle("Requisição inválida");
+    problem.setType(URI.create("https://quickorder.local/errors/VALIDACAO_INVALIDA"));
+    problem.setProperty("code", "VALIDACAO_INVALIDA");
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
 
   @ExceptionHandler(MesaNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleMesaNotFound(MesaNotFoundException ex) {
