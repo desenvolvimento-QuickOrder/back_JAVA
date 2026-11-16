@@ -2,7 +2,6 @@ package com.quickorder.restaurant.core.equipe.web;
 
 import com.quickorder.restaurant.api.UsuariosApi;
 import com.quickorder.restaurant.api.model.AtualizarUsuarioRequest;
-import com.quickorder.restaurant.api.model.CriarUsuario201Response;
 import com.quickorder.restaurant.api.model.CriarUsuarioRequest;
 import com.quickorder.restaurant.api.model.ListarUsuarios200Response;
 import com.quickorder.restaurant.api.model.ListarUsuarios200ResponseAllOfItemsInner;
@@ -56,8 +55,9 @@ public class UsuariosController implements UsuariosApi {
   }
 
   @Override
-  public ResponseEntity<CriarUsuario201Response> criarUsuario(CriarUsuarioRequest request) {
-    Papel papel = papel(valor(request.getPapel()));
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> criarUsuario(
+      CriarUsuarioRequest request) {
+    Papel papel = papel(request.getPapel());
     Usuario usuario =
         criarUsuario.executar(request.getNome(), papel, request.getLogin(), request.getSenha());
     URI location = URI.create("/api/v1/usuarios/" + usuario.id());
@@ -81,12 +81,12 @@ public class UsuariosController implements UsuariosApi {
   }
 
   @Override
-  public ResponseEntity<CriarUsuario201Response> obterUsuario(UUID usuarioId) {
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> obterUsuario(UUID usuarioId) {
     return ResponseEntity.ok(resposta(obterUsuario.executar(usuarioId)));
   }
 
   @Override
-  public ResponseEntity<CriarUsuario201Response> atualizarUsuario(
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> atualizarUsuario(
       UUID usuarioId, AtualizarUsuarioRequest request) {
     Usuario usuario =
         atualizarUsuario.executar(
@@ -100,21 +100,24 @@ public class UsuariosController implements UsuariosApi {
   }
 
   @Override
-  public ResponseEntity<CriarUsuario201Response> desativarUsuario(UUID usuarioId) {
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> desativarUsuario(
+      UUID usuarioId) {
     return ResponseEntity.ok(resposta(desativarUsuario.executar(usuarioId)));
   }
 
   @Override
-  public ResponseEntity<CriarUsuario201Response> ativarUsuario(UUID usuarioId) {
+  public ResponseEntity<ListarUsuarios200ResponseAllOfItemsInner> ativarUsuario(UUID usuarioId) {
     return ResponseEntity.ok(resposta(ativarUsuario.executar(usuarioId)));
   }
 
-  private static CriarUsuario201Response resposta(Usuario usuario) {
-    CriarUsuario201Response resposta = new CriarUsuario201Response();
+  private static ListarUsuarios200ResponseAllOfItemsInner resposta(Usuario usuario) {
+    ListarUsuarios200ResponseAllOfItemsInner resposta =
+        new ListarUsuarios200ResponseAllOfItemsInner();
     resposta.setId(usuario.id());
     resposta.setNome(usuario.nome());
     resposta.setLogin(usuario.login());
-    resposta.setPapel(CriarUsuario201Response.PapelEnum.valueOf(usuario.papel().name()));
+    resposta.setPapel(
+        ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name()));
     resposta.setAtivo(usuario.ativo());
     return resposta;
   }
@@ -125,8 +128,7 @@ public class UsuariosController implements UsuariosApi {
     item.setNome(usuario.nome());
     item.setLogin(usuario.login());
     item.setPapel(
-        JsonNullable.of(
-            ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name())));
+        ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name()));
     item.setAtivo(usuario.ativo());
     return item;
   }
