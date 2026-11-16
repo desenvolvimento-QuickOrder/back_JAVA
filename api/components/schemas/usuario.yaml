@@ -3,7 +3,7 @@ Papel:
   enum: [ADMIN, GARCOM, COPA]
 Usuario:
   type: object
-  required: [id, nome, papel, ativo]
+  required: [id, nome, login, papel, ativo]
   properties:
     id:
       type: string
@@ -24,7 +24,7 @@ Usuario:
       readOnly: true
 UsuarioCriacao:
   type: object
-  required: [nome, papel]
+  required: [nome, login, papel]
   properties:
     nome:
       type: string
@@ -51,9 +51,8 @@ UsuarioAtualizacao:
       minLength: 1
       maxLength: 120
     papel:
-      anyOf:
-        - $ref: '#/Papel'
-        - type: 'null'
+      type: [string, 'null']
+      enum: [ADMIN, GARCOM, COPA, null]
     senha:
       type: [string, 'null']
       format: password

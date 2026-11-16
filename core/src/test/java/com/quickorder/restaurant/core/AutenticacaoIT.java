@@ -315,7 +315,7 @@ class AutenticacaoIT extends IntegracaoBaseIT {
             .perform(
                 get("/api/v1/mesas").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
             .andReturn();
-    assertThat(accessAindaValido.getResponse().getStatus()).isEqualTo(404);
+    assertThat(accessAindaValido.getResponse().getStatus()).isEqualTo(200);
   }
 
   @Test
