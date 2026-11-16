@@ -1,0 +1,84 @@
+colecao:
+  get:
+    tags: [dispositivos]
+    operationId: listarDispositivos
+    summary: Lista os dispositivos do restaurante
+    description: Lista os dispositivos registrados no restaurante do usuário autenticado.
+    x-roles: [ADMIN]
+    parameters:
+      - $ref: ../components/parameters.yaml#/Page
+      - $ref: ../components/parameters.yaml#/Size
+    responses:
+      '200':
+        description: Dispositivos cadastrados.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/dispositivo.yaml#/PaginaDeDispositivos
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+  post:
+    tags: [dispositivos]
+    operationId: registrarDispositivo
+    summary: Registra um dispositivo autorizado
+    description: Registra um dispositivo e retorna o token bruto apenas nesta resposta.
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/dispositivo.yaml#/DispositivoCriacao
+    responses:
+      '201':
+        description: Dispositivo registrado. O token é devolvido somente nesta resposta.
+        headers:
+          Location:
+            $ref: ../components/headers.yaml#/Location
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/dispositivo.yaml#/DispositivoRegistrado
+      '400':
+        $ref: ../components/responses.yaml#/BadRequest
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+revogar:
+  parameters:
+    - name: dispositivoId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  post:
+    tags: [dispositivos]
+    operationId: revogarDispositivo
+    summary: Revoga um dispositivo autorizado
+    description: Revoga o dispositivo informado e as famílias de refresh token associadas.
+    x-roles: [ADMIN]
+    responses:
+      '200':
+        description: Dispositivo revogado.
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/dispositivo.yaml#/Dispositivo
+      '401':
+        $ref: ../components/responses.yaml#/Unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/Forbidden
+      '404':
+        $ref: ../components/responses.yaml#/NotFound

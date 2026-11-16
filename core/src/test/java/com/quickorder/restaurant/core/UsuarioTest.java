@@ -63,4 +63,27 @@ class UsuarioTest {
     assertThatThrownBy(() -> garcom.trocarPapel(Papel.ADMIN))
         .isInstanceOf(com.quickorder.restaurant.core.equipe.domain.TrocaDePapelNaoPermitida.class);
   }
+
+  @Test
+  void funcionarioNasceComTrocaObrigatoriaERedefinicaoExigeNovaTroca() {
+    UUID restauranteId = UUID.randomUUID();
+    Usuario garcom =
+        Usuario.novoFuncionario(
+            UUID.randomUUID(), restauranteId, "João", Papel.GARCOM, "1234", "hash");
+    Usuario copa =
+        Usuario.novoFuncionario(
+            UUID.randomUUID(), restauranteId, "Maria", Papel.COPA, "5678", "hash");
+
+    assertThat(garcom.deveTrocarPin()).isTrue();
+    assertThat(garcom.login()).isNull();
+    assertThat(garcom.senhaHash()).isNull();
+    assertThat(garcom.trocarPin("novo-hash").deveTrocarPin()).isFalse();
+    assertThat(garcom.redefinirPin("reset-hash").deveTrocarPin()).isTrue();
+    assertThat(copa.papel()).isEqualTo(Papel.COPA);
+    assertThatThrownBy(
+            () ->
+                Usuario.novoFuncionario(
+                    UUID.randomUUID(), restauranteId, "Ana", Papel.ADMIN, "9012", "hash"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
 }

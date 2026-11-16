@@ -11,4 +11,12 @@ public interface LimiteDeTentativas {
   void registrarFalhaDaConta(String conta, Instant instante);
 
   void registrarSucessoDaConta(String conta);
+
+  default long tempoRestanteDeBloqueioDoDispositivo(String dispositivo, Instant instante) {
+    return 0;
+  }
+
+  default void registrarFalhaDoDispositivo(String dispositivo, Instant instante) {}
+
+  default void registrarSucessoDoDispositivo(String dispositivo) {}
 }

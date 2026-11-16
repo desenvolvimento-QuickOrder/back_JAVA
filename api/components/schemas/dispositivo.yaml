@@ -1,0 +1,47 @@
+Dispositivo:
+  type: object
+  required: [id, nome, criadoEm, ativo]
+  properties:
+    id:
+      type: string
+      format: uuid
+    nome:
+      type: string
+    criadoEm:
+      type: string
+      format: date-time
+    ultimoUsoEm:
+      type: [string, 'null']
+      format: date-time
+    ativo:
+      type: boolean
+DispositivoRegistrado:
+  type: object
+  required: [id, nome, deviceToken]
+  properties:
+    id:
+      type: string
+      format: uuid
+    nome:
+      type: string
+    deviceToken:
+      type: string
+      writeOnly: true
+DispositivoCriacao:
+  type: object
+  required: [nome]
+  properties:
+    nome:
+      type: string
+      minLength: 1
+      maxLength: 80
+PaginaDeDispositivos:
+  allOf:
+    - $ref: ./common.yaml#/PageMeta
+    - type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/Dispositivo'

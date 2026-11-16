@@ -24,6 +24,8 @@ tags:
     description: Autenticação e renovação de sessão
   - name: usuarios
     description: Gestão de usuários e funcionários (ADMIN)
+  - name: dispositivos
+    description: Registro e revogação de dispositivos confiáveis
   - name: mesas
     description: Cadastro de mesas
   - name: categorias
@@ -43,6 +45,10 @@ paths:
     $ref: ./paths/auth.yaml#/refresh
   /auth/logout:
     $ref: ./paths/auth.yaml#/logout
+  /auth/login-pin:
+    $ref: ./paths/auth.yaml#/loginPin
+  /auth/trocar-pin:
+    $ref: ./paths/auth.yaml#/trocarPin
   /usuarios:
     $ref: ./paths/usuarios.yaml#/colecao
   /usuarios/{usuarioId}:
@@ -51,6 +57,10 @@ paths:
     $ref: ./paths/usuarios.yaml#/desativar
   /usuarios/{usuarioId}/ativar:
     $ref: ./paths/usuarios.yaml#/ativar
+  /dispositivos:
+    $ref: ./paths/dispositivos.yaml#/colecao
+  /dispositivos/{dispositivoId}/revogar:
+    $ref: ./paths/dispositivos.yaml#/revogar
   /mesas:
     $ref: ./paths/mesas.yaml#/colecao
   /mesas/{mesaId}:

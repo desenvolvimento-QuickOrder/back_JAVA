@@ -7,6 +7,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.TimeMeter;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,8 @@ public class LimiteDeTentativasBucket4j implements LimiteDeTentativas {
   private final TimeMeter medidorDeTempo;
   private final ConcurrentMap<String, Bucket> baldesPorIp = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, EstadoDaConta> estadosPorConta = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, EstadoDoDispositivo> estadosPorDispositivo =
+      new ConcurrentHashMap<>();
 
   public LimiteDeTentativasBucket4j(Relogio relogio) {
     this.relogio = relogio;
@@ -67,6 +70,24 @@ public class LimiteDeTentativasBucket4j implements LimiteDeTentativas {
     estadosPorConta.remove(conta);
   }
 
+  @Override
+  public long tempoRestanteDeBloqueioDoDispositivo(String dispositivo, Instant instante) {
+    EstadoDoDispositivo estado = estadosPorDispositivo.get(dispositivo);
+    return estado == null ? 0 : estado.tempoRestante(instante);
+  }
+
+  @Override
+  public void registrarFalhaDoDispositivo(String dispositivo, Instant instante) {
+    estadosPorDispositivo
+        .computeIfAbsent(dispositivo, chave -> new EstadoDoDispositivo())
+        .registrarFalha(instante);
+  }
+
+  @Override
+  public void registrarSucessoDoDispositivo(String dispositivo) {
+    estadosPorDispositivo.remove(dispositivo);
+  }
+
   private Bucket novoBaldePorIp(String ip) {
     return Bucket.builder()
         .addLimit(Bandwidth.builder().capacity(30).refillGreedy(30, Duration.ofMinutes(1)).build())
@@ -104,6 +125,45 @@ public class LimiteDeTentativasBucket4j implements LimiteDeTentativas {
         bloqueadaAte = instante.plus(duracao);
         nivelDeBloqueio = Math.min(nivelDeBloqueio + 1, DURACOES_DE_BLOQUEIO.length - 1);
         falhas = 0;
+      }
+    }
+  }
+
+  private static class EstadoDoDispositivo {
+
+    private static final int MAXIMO_DE_FALHAS = 20;
+    private static final Duration JANELA = Duration.ofMinutes(10);
+    private static final Duration BLOQUEIO = Duration.ofMinutes(10);
+
+    private final ArrayDeque<Instant> falhas = new ArrayDeque<>();
+    private Instant bloqueadaAte;
+
+    synchronized long tempoRestante(Instant instante) {
+      if (bloqueadaAte != null && instante.isBefore(bloqueadaAte)) {
+        return segundosArredondadosParaCima(Duration.between(instante, bloqueadaAte).toNanos());
+      }
+      bloqueadaAte = null;
+      removerFalhasAntigas(instante);
+      return 0;
+    }
+
+    synchronized void registrarFalha(Instant instante) {
+      if (bloqueadaAte != null && instante.isBefore(bloqueadaAte)) {
+        return;
+      }
+      bloqueadaAte = null;
+      removerFalhasAntigas(instante);
+      falhas.addLast(instante);
+      if (falhas.size() >= MAXIMO_DE_FALHAS) {
+        bloqueadaAte = instante.plus(BLOQUEIO);
+        falhas.clear();
+      }
+    }
+
+    private void removerFalhasAntigas(Instant instante) {
+      Instant limite = instante.minus(JANELA);
+      while (!falhas.isEmpty() && !falhas.peekFirst().isAfter(limite)) {
+        falhas.removeFirst();
       }
     }
   }

@@ -14,7 +14,8 @@ public record SessaoDeRefresh(
     Instant expiraEm,
     Instant familiaExpiraEm,
     Instant usadoEm,
-    Instant revogadoEm) {
+    Instant revogadoEm,
+    UUID dispositivoId) {
 
   public SessaoDeRefresh {
     Objects.requireNonNull(id);
@@ -25,6 +26,31 @@ public record SessaoDeRefresh(
     Objects.requireNonNull(criadoEm);
     Objects.requireNonNull(expiraEm);
     Objects.requireNonNull(familiaExpiraEm);
+  }
+
+  public SessaoDeRefresh(
+      UUID id,
+      UUID restauranteId,
+      UUID usuarioId,
+      String tokenHash,
+      UUID familiaId,
+      Instant criadoEm,
+      Instant expiraEm,
+      Instant familiaExpiraEm,
+      Instant usadoEm,
+      Instant revogadoEm) {
+    this(
+        id,
+        restauranteId,
+        usuarioId,
+        tokenHash,
+        familiaId,
+        criadoEm,
+        expiraEm,
+        familiaExpiraEm,
+        usadoEm,
+        revogadoEm,
+        null);
   }
 
   public SessaoDeRefresh marcarComoUsada(Instant instante) {
@@ -38,6 +64,7 @@ public record SessaoDeRefresh(
         expiraEm,
         familiaExpiraEm,
         instante,
-        revogadoEm);
+        revogadoEm,
+        dispositivoId);
   }
 }
