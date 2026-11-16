@@ -7,6 +7,16 @@ colecao:
     parameters:
       - $ref: ../components/parameters.yaml#/Page
       - $ref: ../components/parameters.yaml#/Size
+      - name: papel
+        in: query
+        required: false
+        schema:
+          $ref: ../components/schemas/usuario.yaml#/Papel
+      - name: ativo
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       '200':
         description: Página de usuários.
@@ -112,6 +122,24 @@ item:
         $ref: ../components/responses.yaml#/Forbidden
       '404':
         $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: Conflito de versão (`CONFLITO_DE_VERSAO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Regra de negócio violada (`TROCA_DE_PAPEL_NAO_PERMITIDA` ou `SENHA_ATUAL_INVALIDA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
 desativar:
   parameters:
     - $ref: ../components/parameters.yaml#/UsuarioId

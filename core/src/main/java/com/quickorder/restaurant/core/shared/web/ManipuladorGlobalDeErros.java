@@ -1,10 +1,13 @@
 package com.quickorder.restaurant.core.shared.web;
 
 import com.quickorder.restaurant.core.shared.error.ConflitoDeNegocio;
+import com.quickorder.restaurant.core.shared.error.ErroDeValidacaoDaRequisicao;
 import com.quickorder.restaurant.core.shared.error.ExcecaoDeNegocio;
 import com.quickorder.restaurant.core.shared.error.RecursoNaoEncontrado;
 import com.quickorder.restaurant.core.shared.error.TraducaoDeConstraint;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -68,6 +71,34 @@ public class ManipuladorGlobalDeErros extends ResponseEntityExceptionHandler {
   @ExceptionHandler(ConflitoDeNegocio.class)
   ResponseEntity<Object> tratarConflitoDeNegocio(ConflitoDeNegocio exception, WebRequest request) {
     return resposta(HttpStatus.CONFLICT, exception.getCode(), exception.getMessage(), List.of());
+  }
+
+  @ExceptionHandler(ErroDeValidacaoDaRequisicao.class)
+  ResponseEntity<Object> tratarErroDeValidacao(
+      ErroDeValidacaoDaRequisicao exception, WebRequest request) {
+    List<Map<String, String>> erros =
+        exception.getErros().stream()
+            .map(erro -> Map.of("campo", erro.campo(), "mensagem", erro.mensagem()))
+            .toList();
+    return resposta(HttpStatus.BAD_REQUEST, "REQUISICAO_INVALIDA", exception.getMessage(), erros);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  ResponseEntity<Object> tratarViolacoesDeParametros(
+      ConstraintViolationException exception, WebRequest request) {
+    List<Map<String, String>> erros =
+        exception.getConstraintViolations().stream()
+            .map(
+                violacao ->
+                    Map.of(
+                        "campo", nomeDoCampo(violacao),
+                        "mensagem", violacao.getMessage()))
+            .toList();
+    return resposta(
+        HttpStatus.BAD_REQUEST,
+        "VALIDACAO_INVALIDA",
+        "A requisição contém dados inválidos.",
+        erros);
   }
 
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
@@ -175,6 +206,12 @@ public class ManipuladorGlobalDeErros extends ResponseEntityExceptionHandler {
               Optional.ofNullable(erro.getDefaultMessage()).orElse("Valor inválido.")));
     }
     return erros;
+  }
+
+  private String nomeDoCampo(ConstraintViolation<?> violacao) {
+    String caminho = violacao.getPropertyPath().toString();
+    int separador = caminho.lastIndexOf('.');
+    return separador < 0 ? caminho : caminho.substring(separador + 1);
   }
 
   private Optional<String> extrairNomeDaConstraint(Throwable causaRaiz) {

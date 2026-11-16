@@ -8,6 +8,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -35,6 +37,13 @@ public class UsuarioJpaEntity {
   @Column(nullable = false)
   private boolean ativo;
 
+  @Version
+  @Column(nullable = false)
+  private long version;
+
+  @Column(name = "atualizado_em", nullable = false)
+  private Instant atualizadoEm;
+
   protected UsuarioJpaEntity() {}
 
   UsuarioJpaEntity(Usuario usuario) {
@@ -45,9 +54,16 @@ public class UsuarioJpaEntity {
     senhaHash = usuario.senhaHash();
     papel = usuario.papel();
     ativo = usuario.ativo();
+    version = usuario.versao();
   }
 
   Usuario paraDominio() {
-    return new Usuario(id, restauranteId, nome, login, senhaHash, papel, ativo);
+    return new Usuario(id, restauranteId, nome, login, senhaHash, papel, ativo, version);
+  }
+
+  @jakarta.persistence.PrePersist
+  @jakarta.persistence.PreUpdate
+  void atualizarInstanteDeAtualizacao() {
+    atualizadoEm = Instant.now();
   }
 }
