@@ -23,7 +23,8 @@ public class ListarMesasUseCase {
       throw new IllegalArgumentException("TAMANHO_PAGINA_INVALIDO");
     }
     long total = mesaRepository.count(status, ativa);
-    var mesas = mesaRepository.findPage(pagina * tamanho, tamanho, status, ativa);
+    long offset = (long) pagina * tamanho;
+    var mesas = mesaRepository.findPage(offset, tamanho, status, ativa);
     return MesaPage.from(mesas, pagina, tamanho, total);
   }
 }

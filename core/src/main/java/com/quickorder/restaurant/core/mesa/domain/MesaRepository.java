@@ -11,7 +11,7 @@ public interface MesaRepository {
 
   Optional<Mesa> findByIdForUpdate(UUID id);
 
-  List<Mesa> findPage(int offset, int limit, MesaStatus status, Boolean ativa);
+  List<Mesa> findPage(long offset, int limit, MesaStatus status, Boolean ativa);
 
   long count(MesaStatus status, Boolean ativa);
 
