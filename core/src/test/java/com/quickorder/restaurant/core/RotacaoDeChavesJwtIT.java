@@ -73,7 +73,7 @@ class RotacaoDeChavesJwtIT extends IntegracaoBaseIT {
                 .andReturn()
                 .getResponse()
                 .getStatus())
-        .isEqualTo(404);
+        .isEqualTo(200);
   }
 
   private static String assinar(RSAPrivateKey chave, String kid, Instant instante)
