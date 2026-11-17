@@ -1,5 +1,6 @@
 package com.quickorder.restaurant.core.mesa.web;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,11 @@ public record MesaUpdateRequest(
             Integer>
         capacidade,
     JsonNullable<Boolean> ativa) {
+
+  @JsonAnySetter
+  public void campoDesconhecido(String nome, Object valor) {
+    throw new IllegalArgumentException("CAMPO_DESCONHECIDO");
+  }
 
   public boolean vazio() {
     return (numero == null || !numero.isPresent())
