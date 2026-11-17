@@ -28,7 +28,7 @@ RefreshRequest:
       maxLength: 512
 TokenResponse:
   type: object
-  required: [accessToken, refreshToken, tokenType, expiresIn]
+  required: [accessToken, refreshToken, tokenType, expiresIn, deveTrocarPin]
   properties:
     accessToken:
       type: string
@@ -43,3 +43,36 @@ TokenResponse:
       type: integer
       minimum: 1
       description: Validade do access token em segundos.
+    deveTrocarPin:
+      type: boolean
+      description: Indica que o próximo acesso deve trocar o PIN.
+LoginPinRequest:
+  type: object
+  required: [restaurante, codigo, pin]
+  properties:
+    restaurante:
+      type: string
+      maxLength: 60
+      pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+    codigo:
+      type: string
+      pattern: '^\d{4}$'
+    pin:
+      type: string
+      format: password
+      writeOnly: true
+      pattern: '^\d{4}$'
+TrocarPinRequest:
+  type: object
+  required: [pinAtual, pinNovo]
+  properties:
+    pinAtual:
+      type: string
+      format: password
+      writeOnly: true
+      pattern: '^\d{4}$'
+    pinNovo:
+      type: string
+      format: password
+      writeOnly: true
+      pattern: '^\d{4}$'

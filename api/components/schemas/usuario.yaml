@@ -17,6 +17,11 @@ Usuario:
       type: string
       minLength: 3
       maxLength: 80
+    codigo:
+      type: [string, 'null']
+      pattern: '^\d{4}$'
+      readOnly: true
+      description: Código de acesso do GARCOM ou da COPA.
     papel:
       $ref: '#/Papel'
     ativo:
@@ -24,40 +29,62 @@ Usuario:
       readOnly: true
 UsuarioCriacao:
   type: object
-  required: [nome, login, senha, papel]
+  description: ADMIN exige login e senha; GARCOM e COPA exigem PIN e não aceitam login ou senha.
+  required: [nome, papel]
   properties:
     nome:
       type: string
       minLength: 1
       maxLength: 120
     login:
-      type: string
+      type: [string, 'null']
       pattern: '^[a-z0-9._-]{3,80}$'
-      description: Minúsculas, único por restaurante.
+      description: Obrigatório para ADMIN; minúsculas, único por restaurante.
     senha:
-      type: string
+      type: [string, 'null']
       format: password
       writeOnly: true
       minLength: 8
       maxLength: 128
+    pin:
+      type: [string, 'null']
+      format: password
+      writeOnly: true
+      pattern: '^\d{4}$'
+      minLength: 4
+      maxLength: 4
+      description: Obrigatório para GARCOM e COPA; não pode ser igual ao código gerado.
     papel:
       $ref: '#/Papel'
 UsuarioAtualizacao:
   type: object
+  description: O PIN só pode ser redefinido para GARCOM ou COPA; a redefinição revoga sessões e exige troca no próximo login.
   minProperties: 1
   properties:
     nome:
-      type: string
+      type: [string, 'null']
       minLength: 1
       maxLength: 120
     papel:
-      $ref: '#/Papel'
+      type: [string, 'null']
+      enum: [ADMIN, GARCOM, COPA, null]
     senha:
-      type: string
+      type: [string, 'null']
       format: password
       writeOnly: true
       minLength: 8
       maxLength: 128
+    senhaAtual:
+      type: [string, 'null']
+      format: password
+      writeOnly: true
+    pin:
+      type: [string, 'null']
+      format: password
+      writeOnly: true
+      pattern: '^\d{4}$'
+      minLength: 4
+      maxLength: 4
 UsuarioPage:
   allOf:
     - $ref: ./common.yaml#/PageMeta

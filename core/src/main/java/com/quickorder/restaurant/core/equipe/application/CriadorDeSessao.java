@@ -35,17 +35,36 @@ public class CriadorDeSessao {
   }
 
   public ResultadoDeSessao criarNovaFamilia(Usuario usuario, Instant instante) {
-    return criar(usuario, UUID.randomUUID(), instante.plus(DURACAO_DA_FAMILIA), instante);
+    return criarNovaFamilia(usuario, instante, null);
+  }
+
+  public ResultadoDeSessao criarNovaFamilia(Usuario usuario, Instant instante, UUID dispositivoId) {
+    return criar(
+        usuario, UUID.randomUUID(), instante.plus(DURACAO_DA_FAMILIA), instante, dispositivoId);
   }
 
   public ResultadoDeSessao criarNaFamilia(
       Usuario usuario, UUID familiaId, Instant familiaExpiraEm, Instant instante) {
-    return criar(usuario, familiaId, familiaExpiraEm, instante);
+    return criarNaFamilia(usuario, familiaId, familiaExpiraEm, instante, null);
+  }
+
+  public ResultadoDeSessao criarNaFamilia(
+      Usuario usuario,
+      UUID familiaId,
+      Instant familiaExpiraEm,
+      Instant instante,
+      UUID dispositivoId) {
+    return criar(usuario, familiaId, familiaExpiraEm, instante, dispositivoId);
   }
 
   private ResultadoDeSessao criar(
-      Usuario usuario, UUID familiaId, Instant familiaExpiraEm, Instant instante) {
-    String accessToken = emissorDeJwt.emitir(usuario, instante);
+      Usuario usuario,
+      UUID familiaId,
+      Instant familiaExpiraEm,
+      Instant instante,
+      UUID dispositivoId) {
+    String accessToken =
+        emissorDeJwt.emitir(usuario, instante, dispositivoId, usuario.deveTrocarPin());
     String refreshToken = geradorDeToken.gerar();
     Instant agora = relogio.agora();
     repositorio.salvar(
@@ -59,7 +78,9 @@ public class CriadorDeSessao {
             familiaExpiraEm,
             familiaExpiraEm,
             null,
-            null));
-    return new ResultadoDeSessao(accessToken, refreshToken, DURACAO_ACCESS_TOKEN_SEGUNDOS);
+            null,
+            dispositivoId));
+    return new ResultadoDeSessao(
+        accessToken, refreshToken, DURACAO_ACCESS_TOKEN_SEGUNDOS, usuario.deveTrocarPin());
   }
 }

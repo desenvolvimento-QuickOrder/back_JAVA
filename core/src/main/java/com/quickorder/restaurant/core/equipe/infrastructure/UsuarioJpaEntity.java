@@ -8,7 +8,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "usuario")
@@ -22,10 +26,10 @@ public class UsuarioJpaEntity {
   @Column(nullable = false, length = 120)
   private String nome;
 
-  @Column(nullable = false, length = 80)
+  @Column(length = 80)
   private String login;
 
-  @Column(name = "senha_hash", nullable = false, length = 255)
+  @Column(name = "senha_hash", length = 255)
   private String senhaHash;
 
   @Enumerated(EnumType.STRING)
@@ -34,6 +38,23 @@ public class UsuarioJpaEntity {
 
   @Column(nullable = false)
   private boolean ativo;
+
+  @Column(name = "codigo", length = 4, columnDefinition = "char(4)")
+  @JdbcTypeCode(SqlTypes.CHAR)
+  private String codigo;
+
+  @Column(name = "pin_hash", length = 255)
+  private String pinHash;
+
+  @Column(name = "deve_trocar_pin", nullable = false)
+  private boolean deveTrocarPin;
+
+  @Version
+  @Column(nullable = false)
+  private long version;
+
+  @Column(name = "atualizado_em", nullable = false)
+  private Instant atualizadoEm;
 
   protected UsuarioJpaEntity() {}
 
@@ -45,9 +66,30 @@ public class UsuarioJpaEntity {
     senhaHash = usuario.senhaHash();
     papel = usuario.papel();
     ativo = usuario.ativo();
+    codigo = usuario.codigo();
+    pinHash = usuario.pinHash();
+    deveTrocarPin = usuario.deveTrocarPin();
+    version = usuario.versao();
   }
 
   Usuario paraDominio() {
-    return new Usuario(id, restauranteId, nome, login, senhaHash, papel, ativo);
+    return new Usuario(
+        id,
+        restauranteId,
+        nome,
+        login,
+        senhaHash,
+        papel,
+        ativo,
+        codigo,
+        pinHash,
+        deveTrocarPin,
+        version);
+  }
+
+  @jakarta.persistence.PrePersist
+  @jakarta.persistence.PreUpdate
+  void atualizarInstanteDeAtualizacao() {
+    atualizadoEm = Instant.now();
   }
 }

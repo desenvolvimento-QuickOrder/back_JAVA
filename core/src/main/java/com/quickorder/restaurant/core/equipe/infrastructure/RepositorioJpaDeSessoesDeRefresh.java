@@ -22,4 +22,18 @@ public interface RepositorioJpaDeSessoesDeRefresh
       "update SessaoDeRefreshJpaEntity sessao set sessao.revogadoEm = :instante "
           + "where sessao.familiaId = :familiaId and sessao.revogadoEm is null")
   int revogarFamilia(@Param("familiaId") UUID familiaId, @Param("instante") Instant instante);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      "update SessaoDeRefreshJpaEntity sessao set sessao.revogadoEm = :instante "
+          + "where sessao.usuarioId = :usuarioId and sessao.revogadoEm is null")
+  int revogarTodasDoUsuario(
+      @Param("usuarioId") UUID usuarioId, @Param("instante") Instant instante);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      "update SessaoDeRefreshJpaEntity sessao set sessao.revogadoEm = :instante "
+          + "where sessao.dispositivoId = :dispositivoId and sessao.revogadoEm is null")
+  int revogarTodasDoDispositivo(
+      @Param("dispositivoId") UUID dispositivoId, @Param("instante") Instant instante);
 }

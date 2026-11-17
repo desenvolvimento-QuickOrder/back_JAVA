@@ -7,6 +7,16 @@ colecao:
     parameters:
       - $ref: ../components/parameters.yaml#/Page
       - $ref: ../components/parameters.yaml#/Size
+      - name: papel
+        in: query
+        required: false
+        schema:
+          $ref: ../components/schemas/usuario.yaml#/Papel
+      - name: ativo
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       '200':
         description: Página de usuários.
@@ -25,6 +35,9 @@ colecao:
     tags: [usuarios]
     operationId: criarUsuario
     summary: Cria um usuário
+    description: |
+      ADMIN exige login e senha. GARCOM e COPA exigem PIN e não aceitam login ou senha.
+      Funcionários recebem um código exclusivo do restaurante, nunca reutilizado.
     x-roles: [ADMIN]
     requestBody:
       required: true
@@ -51,7 +64,16 @@ colecao:
       '403':
         $ref: ../components/responses.yaml#/Forbidden
       '409':
-        description: Login já existe no restaurante (`LOGIN_JA_EXISTE`).
+        description: Login duplicado ou colisão persistente de código (`LOGIN_JA_EXISTE` ou `CODIGO_JA_EXISTE`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Não há códigos de funcionário disponíveis (`CODIGOS_ESGOTADOS`).
         headers:
           X-Correlation-Id:
             $ref: ../components/headers.yaml#/CorrelationId
@@ -87,6 +109,7 @@ item:
     tags: [usuarios]
     operationId: atualizarUsuario
     summary: Atualiza um usuário (parcial)
+    description: Redefinir o PIN de um funcionário revoga suas sessões e exige troca no próximo login.
     x-roles: [ADMIN]
     requestBody:
       required: true
@@ -112,6 +135,24 @@ item:
         $ref: ../components/responses.yaml#/Forbidden
       '404':
         $ref: ../components/responses.yaml#/NotFound
+      '409':
+        description: Conflito de versão (`CONFLITO_DE_VERSAO`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Regra de negócio violada (`TROCA_DE_PAPEL_NAO_PERMITIDA` ou `SENHA_ATUAL_INVALIDA`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
 desativar:
   parameters:
     - $ref: ../components/parameters.yaml#/UsuarioId

@@ -11,4 +11,8 @@ public interface RepositorioDeSessoesDeRefresh {
   void salvar(SessaoDeRefresh sessao);
 
   void revogarFamilia(UUID familiaId, Instant instante);
+
+  void revogarTodasDoUsuario(UUID usuarioId, Instant instante);
+
+  void revogarTodasDoDispositivo(UUID dispositivoId, Instant instante);
 }

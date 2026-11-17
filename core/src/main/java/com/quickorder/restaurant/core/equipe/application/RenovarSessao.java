@@ -2,6 +2,7 @@ package com.quickorder.restaurant.core.equipe.application;
 
 import com.quickorder.restaurant.core.equipe.domain.GeradorDeTokenOpaco;
 import com.quickorder.restaurant.core.equipe.domain.Relogio;
+import com.quickorder.restaurant.core.equipe.domain.RepositorioDeDispositivos;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeRestaurantes;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeSessoesDeRefresh;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeUsuarios;
@@ -24,6 +25,7 @@ public class RenovarSessao {
   private final RepositorioDeSessoesDeRefresh sessoes;
   private final RepositorioDeRestaurantes restaurantes;
   private final RepositorioDeUsuarios usuarios;
+  private final RepositorioDeDispositivos dispositivos;
   private final ExecucaoNoTenant execucaoNoTenant;
   private final CriadorDeSessao criadorDeSessao;
   private final GeradorDeTokenOpaco geradorDeToken;
@@ -33,6 +35,7 @@ public class RenovarSessao {
       RepositorioDeSessoesDeRefresh sessoes,
       RepositorioDeRestaurantes restaurantes,
       RepositorioDeUsuarios usuarios,
+      RepositorioDeDispositivos dispositivos,
       ExecucaoNoTenant execucaoNoTenant,
       CriadorDeSessao criadorDeSessao,
       GeradorDeTokenOpaco geradorDeToken,
@@ -40,6 +43,7 @@ public class RenovarSessao {
     this.sessoes = sessoes;
     this.restaurantes = restaurantes;
     this.usuarios = usuarios;
+    this.dispositivos = dispositivos;
     this.execucaoNoTenant = execucaoNoTenant;
     this.criadorDeSessao = criadorDeSessao;
     this.geradorDeToken = geradorDeToken;
@@ -48,6 +52,11 @@ public class RenovarSessao {
 
   @Transactional(noRollbackFor = SessaoInvalida.class)
   public ResultadoDeSessao executar(String refreshToken) {
+    return executar(refreshToken, null);
+  }
+
+  @Transactional(noRollbackFor = SessaoInvalida.class)
+  public ResultadoDeSessao executar(String refreshToken, String tokenDoDispositivo) {
     Instant agora = relogio.agora();
     var sessao = sessoes.buscarPorHashBloqueando(geradorDeToken.hash(refreshToken));
     if (sessao.isEmpty()) {
@@ -55,6 +64,21 @@ public class RenovarSessao {
     }
 
     var atual = sessao.get();
+    if (atual.dispositivoId() != null) {
+      if (tokenDoDispositivo == null || tokenDoDispositivo.isBlank()) {
+        throw new SessaoInvalida();
+      }
+      String hashDoDispositivo = geradorDeToken.hash(tokenDoDispositivo);
+      var dispositivo =
+          execucaoNoTenant.executar(
+              atual.restauranteId(),
+              () -> dispositivos.buscarPorId(atual.dispositivoId()).orElse(null));
+      if (dispositivo == null
+          || !dispositivo.ativo()
+          || !dispositivo.tokenHash().equals(hashDoDispositivo)) {
+        throw new SessaoInvalida();
+      }
+    }
     if (atual.revogadoEm() != null) {
       sessoes.revogarFamilia(atual.familiaId(), agora);
       throw new SessaoInvalida();
@@ -86,6 +110,6 @@ public class RenovarSessao {
       sessoes.salvar(atual.marcarComoUsada(agora));
     }
     return criadorDeSessao.criarNaFamilia(
-        usuario, atual.familiaId(), atual.familiaExpiraEm(), agora);
+        usuario, atual.familiaId(), atual.familiaExpiraEm(), agora, atual.dispositivoId());
   }
 }
