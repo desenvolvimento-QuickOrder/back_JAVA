@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+
+quickorder:
+  senha:
+    pepper: quickorder-test-pepper
+  jwt:
+    issuer: https://quickorder
+    private-key-location: classpath:keys/test-private.pem
+    key-id: teste-atual
+  cors:
+    origens: http://localhost:3000

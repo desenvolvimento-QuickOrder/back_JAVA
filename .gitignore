@@ -2,6 +2,7 @@ target/
 *.class
 *.log
 .env
+.secrets/
 .idea/
 *.iml
 .vscode/
