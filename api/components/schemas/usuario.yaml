@@ -24,7 +24,7 @@ Usuario:
       readOnly: true
 UsuarioCriacao:
   type: object
-  required: [nome, login, senha, papel]
+  required: [nome, login, papel]
   properties:
     nome:
       type: string
@@ -47,13 +47,20 @@ UsuarioAtualizacao:
   minProperties: 1
   properties:
     nome:
-      type: string
+      type: [string, 'null']
       minLength: 1
       maxLength: 120
     papel:
-      $ref: '#/Papel'
+      type: [string, 'null']
+      enum: [ADMIN, GARCOM, COPA, null]
     senha:
-      type: string
+      type: [string, 'null']
+      format: password
+      writeOnly: true
+      minLength: 8
+      maxLength: 128
+    senhaAtual:
+      type: [string, 'null']
       format: password
       writeOnly: true
       minLength: 8

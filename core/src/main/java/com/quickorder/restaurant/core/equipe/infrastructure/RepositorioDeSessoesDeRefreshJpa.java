@@ -32,4 +32,9 @@ public class RepositorioDeSessoesDeRefreshJpa implements RepositorioDeSessoesDeR
   public void revogarFamilia(UUID familiaId, Instant instante) {
     repositorio.revogarFamilia(familiaId, instante);
   }
+
+  @Override
+  public void revogarTodasDoUsuario(UUID usuarioId, Instant instante) {
+    repositorio.revogarTodasDoUsuario(usuarioId, instante);
+  }
 }
