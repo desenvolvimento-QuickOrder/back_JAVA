@@ -32,8 +32,14 @@ public class EmissorDeJwtNimbus implements EmissorDeJwt {
 
   @Override
   public String emitir(Usuario usuario, Instant instante) {
+    return emitir(usuario, instante, null, false);
+  }
+
+  @Override
+  public String emitir(
+      Usuario usuario, Instant instante, UUID dispositivoId, boolean trocaPinPendente) {
     Instant expiracao = instante.plusSeconds(CriadorDeSessao.DURACAO_ACCESS_TOKEN_SEGUNDOS);
-    JwtClaimsSet claims =
+    JwtClaimsSet.Builder construtor =
         JwtClaimsSet.builder()
             .issuer(emissor)
             .subject(usuario.id().toString())
@@ -41,8 +47,14 @@ public class EmissorDeJwtNimbus implements EmissorDeJwt {
             .expiresAt(expiracao)
             .id(UUID.randomUUID().toString())
             .claim("tenant_id", usuario.restauranteId().toString())
-            .claim("roles", List.of(usuario.papel().name()))
-            .build();
+            .claim("roles", List.of(usuario.papel().name()));
+    if (dispositivoId != null) {
+      construtor.claim("did", dispositivoId.toString());
+    }
+    if (trocaPinPendente) {
+      construtor.claim("troca_pin_pendente", true);
+    }
+    JwtClaimsSet claims = construtor.build();
     JwsHeader cabecalho =
         JwsHeader.with(SignatureAlgorithm.RS256).keyId(identificadorDaChave).build();
     return encoder.encode(JwtEncoderParameters.from(cabecalho, claims)).getTokenValue();

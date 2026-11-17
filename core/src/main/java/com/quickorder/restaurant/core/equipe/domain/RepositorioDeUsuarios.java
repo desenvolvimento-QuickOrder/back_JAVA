@@ -8,6 +8,8 @@ public interface RepositorioDeUsuarios {
 
   Optional<Usuario> buscarPorLogin(String login);
 
+  Optional<Usuario> buscarPorCodigo(String codigo);
+
   Optional<Usuario> buscarPorId(UUID id);
 
   boolean possuiAdminAtivo();

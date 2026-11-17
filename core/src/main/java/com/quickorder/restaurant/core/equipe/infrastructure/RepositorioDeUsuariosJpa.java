@@ -28,6 +28,11 @@ public class RepositorioDeUsuariosJpa implements RepositorioDeUsuarios {
   }
 
   @Override
+  public Optional<Usuario> buscarPorCodigo(String codigo) {
+    return repositorio.findByCodigo(codigo).map(UsuarioJpaEntity::paraDominio);
+  }
+
+  @Override
   public Optional<Usuario> buscarPorId(UUID id) {
     return repositorio.findById(id).map(UsuarioJpaEntity::paraDominio);
   }

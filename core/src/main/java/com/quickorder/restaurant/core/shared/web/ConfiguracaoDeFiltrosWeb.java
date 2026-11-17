@@ -1,5 +1,6 @@
 package com.quickorder.restaurant.core.shared.web;
 
+import com.quickorder.restaurant.core.shared.security.FiltroDeTrocaDePin;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,14 @@ public class ConfiguracaoDeFiltrosWeb {
   @Bean
   FilterRegistrationBean<FiltroDeTenantNoMdc> registroServletDoFiltroDeTenantNoMdc(
       FiltroDeTenantNoMdc filtro) {
+    var registro = new FilterRegistrationBean<>(filtro);
+    registro.setEnabled(false);
+    return registro;
+  }
+
+  @Bean
+  FilterRegistrationBean<FiltroDeTrocaDePin> registroServletDoFiltroDeTrocaDePin(
+      FiltroDeTrocaDePin filtro) {
     var registro = new FilterRegistrationBean<>(filtro);
     registro.setEnabled(false);
     return registro;

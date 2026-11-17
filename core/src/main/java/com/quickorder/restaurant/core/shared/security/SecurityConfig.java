@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
@@ -35,6 +36,7 @@ public class SecurityConfig {
       JwtAuthenticationConverter jwtAuthenticationConverter,
       AuthenticationEntryPoint authenticationEntryPoint,
       AccessDeniedHandler accessDeniedHandler,
+      FiltroDeTrocaDePin filtroDeTrocaDePin,
       FiltroDeTenantNoMdc filtroDeTenantNoMdc)
       throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
@@ -51,9 +53,12 @@ public class SecurityConfig {
                     .requestMatchers(
                         HttpMethod.POST,
                         "/api/v1/auth/login",
+                        "/api/v1/auth/login-pin",
                         "/api/v1/auth/refresh",
                         "/api/v1/auth/logout")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/trocar-pin")
+                    .hasAnyRole("GARCOM", "COPA")
                     .requestMatchers(HttpMethod.GET, "/api/v1/cardapio/{slug}")
                     .permitAll()
                     .requestMatchers(
@@ -66,6 +71,13 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/{usuarioId}/ativar")
                     .hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/{usuarioId}/desativar")
+                    .hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/dispositivos")
+                    .hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/dispositivos")
+                    .hasRole("ADMIN")
+                    .requestMatchers(
+                        HttpMethod.POST, "/api/v1/dispositivos/{dispositivoId}/revogar")
                     .hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/v1/mesas", "/api/v1/mesas/{mesaId}")
                     .hasAnyRole("ADMIN", "GARCOM", "COPA")
@@ -127,6 +139,7 @@ public class SecurityConfig {
                     .accessDeniedHandler(accessDeniedHandler)
                     .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
         .addFilterAfter(filtroDeTenantNoMdc, BearerTokenAuthenticationFilter.class)
+        .addFilterAfter(filtroDeTrocaDePin, AnonymousAuthenticationFilter.class)
         .build();
   }
 }

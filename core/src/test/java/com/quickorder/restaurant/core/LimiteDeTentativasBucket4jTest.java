@@ -45,6 +45,26 @@ class LimiteDeTentativasBucket4jTest {
     assertThat(limite.tempoRestanteDeBloqueioDaConta(conta, relogio.agora())).isEqualTo(60);
   }
 
+  @Test
+  void bloqueiaDispositivoAposVinteFalhasPorDezMinutos() {
+    var relogio = new RelogioControlado();
+    relogio.ajustar(Instant.parse("2026-11-05T12:00:00Z"));
+    var limite = new LimiteDeTentativasBucket4j(relogio);
+
+    for (int tentativa = 0; tentativa < 20; tentativa++) {
+      limite.registrarFalhaDoDispositivo("hash-do-dispositivo", relogio.agora());
+    }
+    assertThat(limite.tempoRestanteDeBloqueioDoDispositivo("hash-do-dispositivo", relogio.agora()))
+        .isEqualTo(600);
+
+    relogio.avancar(Duration.ofMinutes(9).plusSeconds(59));
+    assertThat(limite.tempoRestanteDeBloqueioDoDispositivo("hash-do-dispositivo", relogio.agora()))
+        .isEqualTo(1);
+    relogio.avancar(Duration.ofSeconds(1));
+    assertThat(limite.tempoRestanteDeBloqueioDoDispositivo("hash-do-dispositivo", relogio.agora()))
+        .isZero();
+  }
+
   private static void registrarFalhas(
       LimiteDeTentativasBucket4j limite, String conta, RelogioControlado relogio, int quantidade) {
     for (int tentativa = 0; tentativa < quantidade; tentativa++) {

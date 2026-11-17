@@ -44,6 +44,9 @@ public class SessaoDeRefreshJpaEntity {
   @Column(name = "revogado_em")
   private Instant revogadoEm;
 
+  @Column(name = "dispositivo_id")
+  private UUID dispositivoId;
+
   protected SessaoDeRefreshJpaEntity() {}
 
   SessaoDeRefreshJpaEntity(SessaoDeRefresh sessao) {
@@ -57,6 +60,7 @@ public class SessaoDeRefreshJpaEntity {
     familiaExpiraEm = sessao.familiaExpiraEm();
     usadoEm = sessao.usadoEm();
     revogadoEm = sessao.revogadoEm();
+    dispositivoId = sessao.dispositivoId();
   }
 
   SessaoDeRefresh paraDominio() {
@@ -70,6 +74,7 @@ public class SessaoDeRefreshJpaEntity {
         expiraEm,
         familiaExpiraEm,
         usadoEm,
-        revogadoEm);
+        revogadoEm,
+        dispositivoId);
   }
 }

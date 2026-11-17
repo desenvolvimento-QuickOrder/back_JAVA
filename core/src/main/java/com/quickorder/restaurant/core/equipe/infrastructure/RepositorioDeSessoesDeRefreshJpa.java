@@ -37,4 +37,9 @@ public class RepositorioDeSessoesDeRefreshJpa implements RepositorioDeSessoesDeR
   public void revogarTodasDoUsuario(UUID usuarioId, Instant instante) {
     repositorio.revogarTodasDoUsuario(usuarioId, instante);
   }
+
+  @Override
+  public void revogarTodasDoDispositivo(UUID dispositivoId, Instant instante) {
+    repositorio.revogarTodasDoDispositivo(dispositivoId, instante);
+  }
 }

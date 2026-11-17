@@ -15,6 +15,8 @@ public interface RepositorioJpaDeUsuarios extends JpaRepository<UsuarioJpaEntity
 
   Optional<UsuarioJpaEntity> findByLoginAndPapelAndAtivoTrue(String login, Papel papel);
 
+  Optional<UsuarioJpaEntity> findByCodigo(String codigo);
+
   boolean existsByPapelAndAtivoTrue(Papel papel);
 
   boolean existsByLogin(String login);

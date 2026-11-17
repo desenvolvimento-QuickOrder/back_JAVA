@@ -30,9 +30,22 @@ record DadosDeAutenticacaoTeste(
     inserirRestaurante(restauranteId, slug, restauranteAtivo);
 
     Usuario usuario =
-        new Usuario(
-            usuarioId, restauranteId, login, login, hashDeSenha.gerar(senha), papel, usuarioAtivo);
-    execucaoNoTenant.executar(restauranteId, () -> usuarios.salvar(usuario));
+        papel == Papel.ADMIN
+            ? new Usuario(
+                usuarioId,
+                restauranteId,
+                login,
+                login,
+                hashDeSenha.gerar(senha),
+                papel,
+                usuarioAtivo)
+            : Usuario.novoFuncionario(
+                usuarioId, restauranteId, login, papel, "1234", hashDeSenha.gerar("2580"));
+    if (!usuarioAtivo) {
+      usuario = usuario.desativar();
+    }
+    Usuario usuarioPersistido = usuario;
+    execucaoNoTenant.executar(restauranteId, () -> usuarios.salvar(usuarioPersistido));
     return new DadosDeAutenticacaoTeste(restauranteId, usuarioId, slug, login, senha);
   }
 
