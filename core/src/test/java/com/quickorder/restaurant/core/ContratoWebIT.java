@@ -197,6 +197,18 @@ class ContratoWebIT extends IntegracaoBaseIT {
   }
 
   @Test
+  void deveMapearValidacaoDoCorpoComoValidacaoInvalida() throws Exception {
+    mockMvc
+        .perform(
+            post("/teste/erros/json")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"nome\":\"\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDACAO_INVALIDA"))
+        .andExpect(jsonPath("$.errors[0].campo").value("nome"));
+  }
+
+  @Test
   void deveTraduzirDuplicidadeRegistradaParaConflitoDeNegocio() throws Exception {
     mockMvc
         .perform(

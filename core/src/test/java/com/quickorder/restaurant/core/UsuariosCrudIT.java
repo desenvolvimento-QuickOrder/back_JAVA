@@ -407,6 +407,7 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
     assertThat(
             objectMapper.readTree(nuloExplicito.getResponse().getContentAsString()).get("errors"))
         .isNotNull();
+    assertThat(codigo(nuloExplicito)).isEqualTo("VALIDACAO_INVALIDA");
 
     MvcResult vazio =
         mockMvc
@@ -417,6 +418,8 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
                     .content("{}"))
             .andReturn();
     assertThat(vazio.getResponse().getStatus()).isEqualTo(400);
+    assertThat(codigo(vazio)).isEqualTo("VALIDACAO_INVALIDA");
+    assertThat(camposDeErro(vazio)).contains("body");
   }
 
   @Test
@@ -454,6 +457,11 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
     MvcResult senhaAtualInvalida =
         atualizarSenha(admin, "{\"senha\":\"senha-nova-123\",\"senhaAtual\":\"incorreta-123\"}");
     assertThat(senhaAtualInvalida.getResponse().getStatus()).isEqualTo(422);
+
+    MvcResult senhaAtualCurta =
+        atualizarSenha(admin, "{\"senha\":\"senha-nova-123\",\"senhaAtual\":\"x\"}");
+    assertThat(senhaAtualCurta.getResponse().getStatus()).isEqualTo(422);
+    assertThat(codigo(senhaAtualCurta)).isEqualTo("SENHA_ATUAL_INVALIDA");
 
     MvcResult sucesso =
         atualizarSenha(

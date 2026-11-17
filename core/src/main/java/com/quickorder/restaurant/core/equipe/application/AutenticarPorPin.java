@@ -64,47 +64,53 @@ public class AutenticarPorPin {
       throw new LimiteDeTentativasExcedido(esperaPorIp);
     }
 
-    String tokenHash =
-        tokenDoDispositivo == null || tokenDoDispositivo.isBlank()
-            ? "ausente"
-            : geradorDeToken.hash(tokenDoDispositivo);
     String conta = "pin:" + normalizar(slug) + ":" + codigo;
-    long esperaDaConta = limiteDeTentativas.tempoRestanteDeBloqueioDaConta(conta, agora);
-    long esperaDoDispositivo =
-        limiteDeTentativas.tempoRestanteDeBloqueioDoDispositivo(tokenHash, agora);
-    if (esperaDaConta > 0 || esperaDoDispositivo > 0) {
-      throw new LimiteDeTentativasExcedido(Math.max(esperaDaConta, esperaDoDispositivo));
-    }
-
     Restaurante restaurante = restaurantes.buscarPorSlug(normalizar(slug)).orElse(null);
     if (restaurante == null || !restaurante.ativo()) {
-      falhar(pin, conta, tokenHash, agora);
+      hashDeSenha.corresponde(pin, hashFicticio);
       throw new CredenciaisInvalidas();
     }
 
+    String hashDoToken =
+        tokenDoDispositivo == null || tokenDoDispositivo.isBlank()
+            ? null
+            : geradorDeToken.hash(tokenDoDispositivo);
     Credenciais credenciais =
         execucaoNoTenant.executar(
             restaurante.id(),
             () ->
                 new Credenciais(
-                    tokenDoDispositivo == null || tokenDoDispositivo.isBlank()
+                    hashDoToken == null
                         ? null
-                        : dispositivos.buscarPorHashDoToken(tokenHash).orElse(null),
+                        : dispositivos.buscarPorHashDoToken(hashDoToken).orElse(null),
                     usuarios.buscarPorCodigo(codigo).orElse(null)));
     Usuario usuario = credenciais.usuario();
     Dispositivo dispositivo = credenciais.dispositivo();
     boolean dispositivoValido = dispositivo != null && dispositivo.ativo();
+    if (!dispositivoValido) {
+      hashDeSenha.corresponde(pin, hashFicticio);
+      throw new CredenciaisInvalidas();
+    }
+
+    String idDoDispositivo = dispositivo.id().toString();
+    long esperaDaConta = limiteDeTentativas.tempoRestanteDeBloqueioDaConta(conta, agora);
+    long esperaDoDispositivo =
+        limiteDeTentativas.tempoRestanteDeBloqueioDoDispositivo(idDoDispositivo, agora);
+    if (esperaDaConta > 0 || esperaDoDispositivo > 0) {
+      throw new LimiteDeTentativasExcedido(Math.max(esperaDaConta, esperaDoDispositivo));
+    }
+
     boolean usuarioValido =
         usuario != null
             && usuario.ativo()
             && (usuario.papel() == Papel.GARCOM || usuario.papel() == Papel.COPA);
-    if (!dispositivoValido || !usuarioValido) {
+    if (!usuarioValido) {
       hashDeSenha.corresponde(pin, hashFicticio);
-      falhar(conta, tokenHash, agora);
+      falhar(conta, idDoDispositivo, agora);
       throw new CredenciaisInvalidas();
     }
     if (!hashDeSenha.corresponde(pin, usuario.pinHash())) {
-      falhar(conta, tokenHash, agora);
+      falhar(conta, idDoDispositivo, agora);
       throw new CredenciaisInvalidas();
     }
 
@@ -116,18 +122,13 @@ public class AutenticarPorPin {
         });
     ResultadoDeSessao sessao = criadorDeSessao.criarNovaFamilia(usuario, agora, dispositivo.id());
     limiteDeTentativas.registrarSucessoDaConta(conta);
-    limiteDeTentativas.registrarSucessoDoDispositivo(tokenHash);
+    limiteDeTentativas.registrarSucessoDoDispositivo(idDoDispositivo);
     return sessao;
   }
 
-  private void falhar(String pin, String conta, String tokenHash, Instant instante) {
-    hashDeSenha.corresponde(pin, hashFicticio);
-    falhar(conta, tokenHash, instante);
-  }
-
-  private void falhar(String conta, String tokenHash, Instant instante) {
+  private void falhar(String conta, String idDoDispositivo, Instant instante) {
     limiteDeTentativas.registrarFalhaDaConta(conta, instante);
-    limiteDeTentativas.registrarFalhaDoDispositivo(tokenHash, instante);
+    limiteDeTentativas.registrarFalhaDoDispositivo(idDoDispositivo, instante);
   }
 
   private static String normalizar(String valor) {

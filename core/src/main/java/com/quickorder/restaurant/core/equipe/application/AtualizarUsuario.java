@@ -108,8 +108,7 @@ public class AtualizarUsuario {
     adicionarErroSeInvalido(erros, "papel", papel, valor -> true);
     adicionarErroSeInvalido(
         erros, "senha", senha, valor -> valor.length() >= 8 && valor.length() <= 128);
-    adicionarErroSeInvalido(
-        erros, "senhaAtual", senhaAtual, valor -> valor.length() >= 8 && valor.length() <= 128);
+    adicionarErroSeInvalido(erros, "senhaAtual", senhaAtual, valor -> true);
     adicionarErroSeInvalido(
         erros,
         "pin",

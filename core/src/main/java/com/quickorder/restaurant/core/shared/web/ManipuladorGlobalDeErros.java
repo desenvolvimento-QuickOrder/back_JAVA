@@ -80,7 +80,7 @@ public class ManipuladorGlobalDeErros extends ResponseEntityExceptionHandler {
         exception.getErros().stream()
             .map(erro -> Map.of("campo", erro.campo(), "mensagem", erro.mensagem()))
             .toList();
-    return resposta(HttpStatus.BAD_REQUEST, "REQUISICAO_INVALIDA", exception.getMessage(), erros);
+    return resposta(HttpStatus.BAD_REQUEST, "VALIDACAO_INVALIDA", exception.getMessage(), erros);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
@@ -254,14 +254,14 @@ public class ManipuladorGlobalDeErros extends ResponseEntityExceptionHandler {
         || status.value() == 404) {
       return "RECURSO_NAO_ENCONTRADO";
     }
+    if (exception instanceof MethodArgumentNotValidException
+        || exception instanceof HandlerMethodValidationException) {
+      return "VALIDACAO_INVALIDA";
+    }
     if (exception instanceof TypeMismatchException
         || exception instanceof HttpMessageNotReadableException
         || status.value() == 400) {
       return "REQUISICAO_INVALIDA";
-    }
-    if (exception instanceof MethodArgumentNotValidException
-        || exception instanceof HandlerMethodValidationException) {
-      return "VALIDACAO_INVALIDA";
     }
     if (status.value() == 429) {
       return "LIMITE_EXCEDIDO";

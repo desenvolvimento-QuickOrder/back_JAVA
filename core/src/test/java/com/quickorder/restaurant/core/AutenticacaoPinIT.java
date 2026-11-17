@@ -278,7 +278,7 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
                 .get("detail")
                 .asString());
 
-    for (int tentativa = 0; tentativa < 3; tentativa++) {
+    for (int tentativa = 0; tentativa < 4; tentativa++) {
       assertThat(
               loginPin(admin.slug(), funcionario.codigo(), "9999", dispositivo.token())
                   .getResponse()
@@ -289,6 +289,43 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
         loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivo.token());
     assertThat(contaBloqueada.getResponse().getStatus()).isEqualTo(429);
     assertThat(contaBloqueada.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
+  }
+
+  @Test
+  void tentativasSemDispositivoOuComTokenInvalidoNaoBloqueiamContaDoFuncionario() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    String accessAdmin = accessToken(login(admin.slug(), admin.login(), admin.senha()));
+    DadosDoFuncionario funcionario = criarFuncionarioPelaApi(accessAdmin, "2580");
+    DadosDoDispositivo dispositivoRevogado = registrarDispositivo(accessAdmin);
+    DadosDoDispositivo dispositivoValido = registrarDispositivo(accessAdmin);
+    assertThat(revogar(accessAdmin, dispositivoRevogado.id()).getResponse().getStatus())
+        .isEqualTo(200);
+
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", null).getResponse().getStatus())
+          .isEqualTo(401);
+    }
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", "token-invalido")
+                  .getResponse()
+                  .getStatus())
+          .isEqualTo(401);
+    }
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivoRevogado.token())
+                  .getResponse()
+                  .getStatus())
+          .isEqualTo(401);
+    }
+
+    assertThat(
+            loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivoValido.token())
+                .getResponse()
+                .getStatus())
+        .isEqualTo(200);
   }
 
   @Test

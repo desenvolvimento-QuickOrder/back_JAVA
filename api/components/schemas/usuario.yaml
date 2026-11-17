@@ -78,8 +78,6 @@ UsuarioAtualizacao:
       type: [string, 'null']
       format: password
       writeOnly: true
-      minLength: 8
-      maxLength: 128
     pin:
       type: [string, 'null']
       format: password
