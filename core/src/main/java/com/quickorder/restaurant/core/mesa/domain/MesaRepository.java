@@ -9,7 +9,11 @@ public interface MesaRepository {
 
   Optional<Mesa> findById(UUID id);
 
-  List<Mesa> findAll();
+  Optional<Mesa> findByIdForUpdate(UUID id);
+
+  List<Mesa> findPage(long offset, int limit, MesaStatus status, Boolean ativa);
+
+  long count(MesaStatus status, Boolean ativa);
 
   boolean existsByNumero(String numero);
 

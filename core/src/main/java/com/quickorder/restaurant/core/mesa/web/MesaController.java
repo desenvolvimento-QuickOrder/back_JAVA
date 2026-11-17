@@ -74,8 +74,46 @@ public class MesaController {
   @PatchMapping("/{id}")
   public MesaResponse atualizar(
       @PathVariable UUID id, @Valid @RequestBody MesaUpdateRequest request) {
+    validarCampos(request);
+    if (request.vazio()
+        || (request.numero() != null
+            && request.numero().isPresent()
+            && request.numero().get() == null)
+        || (request.capacidade() != null
+            && request.capacidade().isPresent()
+            && request.capacidade().get() == null)
+        || (request.ativa() != null
+            && request.ativa().isPresent()
+            && request.ativa().get() == null)) {
+      throw new IllegalArgumentException("ATUALIZACAO_INVALIDA");
+    }
     var mesa =
-        atualizarMesaUseCase.execute(id, request.numero(), request.capacidade(), request.ativa());
+        atualizarMesaUseCase.execute(
+            id,
+            request.numero() == null || !request.numero().isPresent()
+                ? null
+                : request.numero().get(),
+            request.capacidade() == null || !request.capacidade().isPresent()
+                ? null
+                : request.capacidade().get(),
+            request.ativa() == null || !request.ativa().isPresent() ? null : request.ativa().get());
     return mesaMapper.toResponse(mesa);
+  }
+
+  private static void validarCampos(MesaUpdateRequest request) {
+    if (request.numero() != null
+        && request.numero().isPresent()
+        && (request.numero().get() == null
+            || request.numero().get().isBlank()
+            || request.numero().get().length() > 20)) {
+      throw new IllegalArgumentException("NUMERO_INVALIDO");
+    }
+    if (request.capacidade() != null
+        && request.capacidade().isPresent()
+        && (request.capacidade().get() == null
+            || request.capacidade().get() < 1
+            || request.capacidade().get() > 100)) {
+      throw new IllegalArgumentException("CAPACIDADE_INVALIDA");
+    }
   }
 }
