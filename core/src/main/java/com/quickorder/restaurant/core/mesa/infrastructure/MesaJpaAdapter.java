@@ -34,7 +34,10 @@ public class MesaJpaAdapter implements MesaRepository {
             .tenantAtual()
             .orElseThrow(() -> new IllegalStateException("Tenant do restaurante ausente."));
     try {
-      return jpaMesaRepository.saveAndFlush(MesaEntity.fromDomain(mesa, restauranteId)).toDomain();
+      return jpaMesaRepository
+          .saveAndFlush(MesaEntity.fromDomain(mesa, restauranteId))
+          .toDomain()
+          .comStatus(mesa.status());
     } catch (DataIntegrityViolationException exception) {
       if (causedByMesaNumeroConstraint(exception)) {
         throw new MesaDuplicadoException(mesa.numero());
@@ -54,7 +57,7 @@ public class MesaJpaAdapter implements MesaRepository {
   }
 
   @Override
-  public List<Mesa> findPage(int offset, int limit, MesaStatus status, Boolean ativa) {
+  public List<Mesa> findPage(long offset, int limit, MesaStatus status, Boolean ativa) {
     StringBuilder sql =
         new StringBuilder(
             """
