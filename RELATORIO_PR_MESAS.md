@@ -113,10 +113,15 @@ Resultados:
 
 ## CI e PR
 
-Após o push desta rodada, o PR #23 deve ser verificado no novo workflow pela equipe. O estado
-registrado neste arquivo deve ser atualizado com o link e os resultados finais do run remoto.
+- **Run:** [CI 44069762889](https://github.com/desenvolvimento-QuickOrder/back_JAVA/actions/runs/44069762889)
+- **Head validado:** `2da5fc217d2e04b77f1d75edc8d6ed282b14b33b`
+- `build`: sucesso — formatação, testes e relatórios.
+- `contrato`: sucesso — bundle, Spectral, papéis e compatibilidade.
+- `imagem`: sucesso — construção da imagem.
 
-O PR permanece aberto contra `main` e não foi mesclado.
+O workflow inicialmente ficou em `action_required`; foi feita uma única reexecução do mesmo
+run, que terminou com os três jobs verdes. O PR permanece aberto contra `main`, mergeável e
+não foi mesclado.
 
 ## Desvios, riscos e sugestões futuras
 
