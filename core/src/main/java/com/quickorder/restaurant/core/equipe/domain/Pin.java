@@ -13,9 +13,10 @@ public record Pin(String valor) {
   }
 
   public boolean podeSerUsadoCom(CodigoFuncionario codigo) {
-    if (valor.equals(codigo.valor())) {
-      return false;
-    }
+    return !valor.equals(codigo.valor()) && podeSerUsado();
+  }
+
+  public boolean podeSerUsado() {
     if (valor.chars().distinct().count() == 1) {
       return false;
     }

@@ -59,7 +59,12 @@ public class UsuariosController implements UsuariosApi {
       CriarUsuarioRequest request) {
     Papel papel = papel(request.getPapel());
     Usuario usuario =
-        criarUsuario.executar(request.getNome(), papel, request.getLogin(), request.getSenha());
+        criarUsuario.executar(
+            request.getNome(),
+            papel,
+            campo(request.getLogin()),
+            campo(request.getSenha()),
+            campo(request.getPin()));
     URI location = URI.create("/api/v1/usuarios/" + usuario.id());
     return ResponseEntity.created(location).body(resposta(usuario));
   }
@@ -95,7 +100,8 @@ public class UsuariosController implements UsuariosApi {
             campo(request.getNome()),
             campoPapel(request.getPapel()),
             campo(request.getSenha()),
-            campo(request.getSenhaAtual()));
+            campo(request.getSenhaAtual()),
+            campo(request.getPin()));
     return ResponseEntity.ok(resposta(usuario));
   }
 
@@ -115,6 +121,7 @@ public class UsuariosController implements UsuariosApi {
     resposta.setId(usuario.id());
     resposta.setNome(usuario.nome());
     resposta.setLogin(usuario.login());
+    resposta.setCodigo(usuario.codigo());
     resposta.setPapel(
         ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name()));
     resposta.setAtivo(usuario.ativo());
@@ -126,6 +133,7 @@ public class UsuariosController implements UsuariosApi {
     item.setId(usuario.id());
     item.setNome(usuario.nome());
     item.setLogin(usuario.login());
+    item.setCodigo(JsonNullable.of(usuario.codigo()));
     item.setPapel(
         ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name()));
     item.setAtivo(usuario.ativo());
@@ -152,6 +160,12 @@ public class UsuariosController implements UsuariosApi {
     return valor == null || !valor.isPresent()
         ? CampoAtualizacao.ausente()
         : CampoAtualizacao.informado(valor.get());
+  }
+
+  private static CampoAtualizacao<String> campo(String valor) {
+    return valor == null
+        ? CampoAtualizacao.ausente()
+        : CampoAtualizacao.informado(valor);
   }
 
   private static <T> T valor(JsonNullable<T> campo) {

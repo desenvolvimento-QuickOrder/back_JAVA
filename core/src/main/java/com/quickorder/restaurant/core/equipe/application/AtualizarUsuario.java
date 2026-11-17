@@ -1,7 +1,9 @@
 package com.quickorder.restaurant.core.equipe.application;
 
+import com.quickorder.restaurant.core.equipe.domain.CodigoFuncionario;
 import com.quickorder.restaurant.core.equipe.domain.HashDeSenha;
 import com.quickorder.restaurant.core.equipe.domain.Papel;
+import com.quickorder.restaurant.core.equipe.domain.Pin;
 import com.quickorder.restaurant.core.equipe.domain.Relogio;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeSessoesDeRefresh;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeUsuarios;
@@ -43,17 +45,22 @@ public class AtualizarUsuario {
       CampoAtualizacao<String> nome,
       CampoAtualizacao<Papel> papel,
       CampoAtualizacao<String> senha,
-      CampoAtualizacao<String> senhaAtual) {
-    List<ErroDeCampo> erros = validarCampos(nome, papel, senha, senhaAtual);
+      CampoAtualizacao<String> senhaAtual,
+      CampoAtualizacao<String> pin) {
+    List<ErroDeCampo> erros = validarCampos(nome, papel, senha, senhaAtual, pin);
     if (!erros.isEmpty()) {
       throw new ErroDeValidacaoDaRequisicao(erros);
     }
-    if (!nome.informado() && !papel.informado() && !senha.informado()) {
+    if (!nome.informado() && !papel.informado() && !senha.informado() && !pin.informado()) {
       throw erro("body", "Informe ao menos um campo para atualização.");
     }
 
     Usuario usuario =
         usuarios.buscarPorId(id).orElseThrow(() -> new RecursoNaoEncontrado("Usuário"));
+    erros = validarCredenciais(usuario, senha, senhaAtual, pin);
+    if (!erros.isEmpty()) {
+      throw new ErroDeValidacaoDaRequisicao(erros);
+    }
     boolean senhaAlterada = senha.informado();
     if (senhaAlterada && id.equals(idDoSolicitante)) {
       if (!senhaAtual.informado()
@@ -78,9 +85,13 @@ public class AtualizarUsuario {
     if (senhaAlterada) {
       atualizado = atualizado.trocarSenha(hashDeSenha.gerar(senha.valor()));
     }
+    boolean pinAlterado = pin.informado();
+    if (pinAlterado) {
+      atualizado = atualizado.redefinirPin(hashDeSenha.gerar(pin.valor()));
+    }
 
     Usuario salvo = usuarios.salvar(atualizado);
-    if (senhaAlterada || (papel.informado() && papel.valor() != usuario.papel())) {
+    if (senhaAlterada || pinAlterado || (papel.informado() && papel.valor() != usuario.papel())) {
       sessoes.revogarTodasDoUsuario(id, relogio.agora());
     }
     return salvo;
@@ -90,7 +101,8 @@ public class AtualizarUsuario {
       CampoAtualizacao<String> nome,
       CampoAtualizacao<Papel> papel,
       CampoAtualizacao<String> senha,
-      CampoAtualizacao<String> senhaAtual) {
+      CampoAtualizacao<String> senhaAtual,
+      CampoAtualizacao<String> pin) {
     List<ErroDeCampo> erros = new ArrayList<>();
     adicionarErroSeInvalido(erros, "nome", nome, valor -> !valor.isBlank());
     adicionarErroSeInvalido(erros, "papel", papel, valor -> true);
@@ -98,6 +110,41 @@ public class AtualizarUsuario {
         erros, "senha", senha, valor -> valor.length() >= 8 && valor.length() <= 128);
     adicionarErroSeInvalido(
         erros, "senhaAtual", senhaAtual, valor -> valor.length() >= 8 && valor.length() <= 128);
+    adicionarErroSeInvalido(
+        erros,
+        "pin",
+        pin,
+        valor -> {
+          try {
+            return new Pin(valor).podeSerUsado();
+          } catch (IllegalArgumentException excecao) {
+            return false;
+          }
+        });
+    return erros;
+  }
+
+  private static List<ErroDeCampo> validarCredenciais(
+      Usuario usuario,
+      CampoAtualizacao<String> senha,
+      CampoAtualizacao<String> senhaAtual,
+      CampoAtualizacao<String> pin) {
+    List<ErroDeCampo> erros = new ArrayList<>();
+    if (usuario.papel() != Papel.ADMIN) {
+      if (senha.informado()) {
+        erros.add(new ErroDeCampo("senha", "GARCOM e COPA não podem ter senha."));
+      }
+      if (senhaAtual.informado()) {
+        erros.add(new ErroDeCampo("senhaAtual", "GARCOM e COPA não podem ter senha."));
+      }
+    }
+    if (pin.informado()) {
+      if (usuario.papel() == Papel.ADMIN) {
+        erros.add(new ErroDeCampo("pin", "ADMIN não pode ter PIN."));
+      } else if (!new Pin(pin.valor()).podeSerUsadoCom(new CodigoFuncionario(usuario.codigo()))) {
+        erros.add(new ErroDeCampo("pin", "O PIN escolhido não pode ser usado."));
+      }
+    }
     return erros;
   }
 
