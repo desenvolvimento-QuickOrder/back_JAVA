@@ -21,6 +21,10 @@ public interface RepositorioJpaDeUsuarios extends JpaRepository<UsuarioJpaEntity
 
   boolean existsByLogin(String login);
 
+  @Query(
+      "select usuario.codigo from UsuarioJpaEntity usuario " + "where usuario.codigo is not null")
+  List<String> codigosUsados();
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query(
       "select usuario from UsuarioJpaEntity usuario "

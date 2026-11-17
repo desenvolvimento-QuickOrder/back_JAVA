@@ -42,7 +42,7 @@ public class TrocarPin {
     execucaoNoTenant.executar(
         restauranteId,
         () -> {
-          var usuario = usuarios.buscarPorId(usuarioId).orElseThrow();
+          var usuario = usuarios.buscarPorId(usuarioId).orElseThrow(SessaoInvalida::new);
           if (!usuario.ativo()
               || (usuario.papel() != Papel.GARCOM && usuario.papel() != Papel.COPA)) {
             throw new SessaoInvalida();

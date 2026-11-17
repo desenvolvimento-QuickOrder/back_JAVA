@@ -1,11 +1,13 @@
 package com.quickorder.restaurant.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.quickorder.restaurant.core.equipe.domain.CodigoFuncionarioDuplicado;
 import com.quickorder.restaurant.core.equipe.domain.HashDeSenha;
 import com.quickorder.restaurant.core.equipe.domain.Papel;
 import com.quickorder.restaurant.core.equipe.domain.RepositorioDeUsuarios;
@@ -39,7 +41,7 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
   @Autowired private ExecucaoNoTenant execucaoNoTenant;
 
   @Test
-  void criaAdminERejeitaPapelDeFuncionarioOuLoginDuplicado() throws Exception {
+  void criaAdminERejeitaCredenciaisInvalidasOuLoginDuplicado() throws Exception {
     DadosDeAutenticacaoTeste admin = criarAdmin();
     String corpo =
         "{\"nome\":\"Outro admin\",\"papel\":\"ADMIN\",\"login\":\"outro.admin\",\"senha\":\"senha-forte-123\"}";
@@ -108,6 +110,239 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
   }
 
   @Test
+  void criaFuncionarioComCodigoSemExporPinEValidaCredenciaisPorPapel() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    MvcResult criado =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Garçom\",\"papel\":\"GARCOM\",\"pin\":\"2580\"}"))
+            .andReturn();
+    assertThat(criado.getResponse().getStatus()).isEqualTo(201);
+    var resposta = objectMapper.readTree(criado.getResponse().getContentAsString());
+    String codigoGerado = resposta.get("codigo").asString();
+    assertThat(codigoGerado).matches("\\d{4}").isNotEqualTo("2580");
+    assertThat(resposta.has("pin")).isFalse();
+    assertThat(criado.getResponse().getContentAsString()).doesNotContain("2580");
+    UUID funcionarioId = UUID.fromString(resposta.get("id").asString());
+
+    MvcResult obtido =
+        mockMvc.perform(get("/api/v1/usuarios/{id}", funcionarioId).with(token(admin))).andReturn();
+    assertThat(
+            objectMapper
+                .readTree(obtido.getResponse().getContentAsString())
+                .get("codigo")
+                .asString())
+        .isEqualTo(codigoGerado);
+
+    MvcResult listado =
+        mockMvc
+            .perform(get("/api/v1/usuarios").with(token(admin)).queryParam("papel", "GARCOM"))
+            .andReturn();
+    assertThat(
+            objectMapper
+                .readTree(listado.getResponse().getContentAsString())
+                .get("items")
+                .get(0)
+                .get("codigo")
+                .asString())
+        .isEqualTo(codigoGerado);
+
+    MvcResult semPin =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Garçom\",\"papel\":\"GARCOM\"}"))
+            .andReturn();
+    assertThat(semPin.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(semPin)).contains("pin");
+
+    for (String pinProibido : List.of("1111", "1234", "4321")) {
+      MvcResult pinInvalido =
+          mockMvc
+              .perform(
+                  post("/api/v1/usuarios")
+                      .with(token(admin))
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(
+                          "{\"nome\":\"Garçom\",\"papel\":\"GARCOM\",\"pin\":\""
+                              + pinProibido
+                              + "\"}"))
+              .andReturn();
+      assertThat(pinInvalido.getResponse().getStatus()).isEqualTo(400);
+      assertThat(camposDeErro(pinInvalido)).contains("pin");
+    }
+
+    MvcResult credenciaisDeAdminEmFuncionario =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"nome\":\"Garçom\",\"papel\":\"GARCOM\",\"login\":\"garcom\","
+                            + "\"senha\":\"senha-forte-123\",\"pin\":\"2581\"}"))
+            .andReturn();
+    assertThat(credenciaisDeAdminEmFuncionario.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(credenciaisDeAdminEmFuncionario)).contains("login", "senha");
+
+    MvcResult loginNuloEmFuncionario =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"nome\":\"Garçom\",\"papel\":\"GARCOM\",\"login\":null,\"pin\":\"2581\"}"))
+            .andReturn();
+    assertThat(loginNuloEmFuncionario.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(loginNuloEmFuncionario)).contains("login");
+
+    MvcResult pinEmAdmin =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"nome\":\"Admin\",\"papel\":\"ADMIN\",\"login\":\"novo.admin\","
+                            + "\"senha\":\"senha-forte-123\",\"pin\":\"2581\"}"))
+            .andReturn();
+    assertThat(pinEmAdmin.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(pinEmAdmin)).contains("pin");
+
+    MvcResult adminSemLoginOuSenha =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Admin\",\"papel\":\"ADMIN\"}"))
+            .andReturn();
+    assertThat(adminSemLoginOuSenha.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(adminSemLoginOuSenha)).contains("login", "senha");
+
+    MvcResult pinNuloEmAdmin =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"nome\":\"Admin\",\"papel\":\"ADMIN\",\"login\":\"nulo.admin\","
+                            + "\"senha\":\"senha-forte-123\",\"pin\":null}"))
+            .andReturn();
+    assertThat(pinNuloEmAdmin.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(pinNuloEmAdmin)).contains("pin");
+  }
+
+  @Test
+  void codigoDeFuncionarioInativoNaoEReutilizado() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    MvcResult primeiro =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Primeiro\",\"papel\":\"GARCOM\",\"pin\":\"2580\"}"))
+            .andReturn();
+    var respostaPrimeiro = objectMapper.readTree(primeiro.getResponse().getContentAsString());
+    UUID idPrimeiro = UUID.fromString(respostaPrimeiro.get("id").asString());
+    String codigoPrimeiro = respostaPrimeiro.get("codigo").asString();
+    assertThat(desativar(admin, idPrimeiro).getResponse().getStatus()).isEqualTo(200);
+
+    MvcResult segundo =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Segundo\",\"papel\":\"COPA\",\"pin\":\"3579\"}"))
+            .andReturn();
+    assertThat(segundo.getResponse().getStatus()).isEqualTo(201);
+    assertThat(
+            objectMapper
+                .readTree(segundo.getResponse().getContentAsString())
+                .get("codigo")
+                .asString())
+        .isNotEqualTo(codigoPrimeiro);
+  }
+
+  @Test
+  void adaptadorIdentificaColisaoDaConstraintDeCodigo() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    Usuario primeiro =
+        Usuario.novoFuncionario(
+            UUID.randomUUID(),
+            admin.restauranteId(),
+            "Primeiro",
+            Papel.GARCOM,
+            "9876",
+            hashDeSenha.gerar("2580"));
+    Usuario duplicado =
+        Usuario.novoFuncionario(
+            UUID.randomUUID(),
+            admin.restauranteId(),
+            "Segundo",
+            Papel.COPA,
+            "9876",
+            hashDeSenha.gerar("3579"));
+    execucaoNoTenant.executar(admin.restauranteId(), () -> usuarios.salvar(primeiro));
+
+    Throwable erro =
+        catchThrowable(
+            () ->
+                execucaoNoTenant.executar(admin.restauranteId(), () -> usuarios.salvar(duplicado)));
+
+    assertThat(erro).isInstanceOf(CodigoFuncionarioDuplicado.class);
+  }
+
+  @Test
+  void patchDePinRejeitaAdminECodigoDoFuncionario() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    MvcResult criado =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nome\":\"Garçom\",\"papel\":\"GARCOM\",\"pin\":\"2580\"}"))
+            .andReturn();
+    UUID funcionarioId =
+        UUID.fromString(
+            objectMapper.readTree(criado.getResponse().getContentAsString()).get("id").asString());
+    String codigoFuncionario =
+        objectMapper.readTree(criado.getResponse().getContentAsString()).get("codigo").asString();
+
+    MvcResult pinIgualAoCodigo =
+        mockMvc
+            .perform(
+                patch("/api/v1/usuarios/{id}", funcionarioId)
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"pin\":\"" + codigoFuncionario + "\"}"))
+            .andReturn();
+    assertThat(pinIgualAoCodigo.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(pinIgualAoCodigo)).contains("pin");
+
+    MvcResult pinEmAdmin =
+        mockMvc
+            .perform(
+                patch("/api/v1/usuarios/{id}", admin.usuarioId())
+                    .with(token(admin))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"pin\":\"2581\"}"))
+            .andReturn();
+    assertThat(pinEmAdmin.getResponse().getStatus()).isEqualTo(400);
+    assertThat(camposDeErro(pinEmAdmin)).contains("pin");
+  }
+
+  @Test
   void listaComFiltrosPaginacaoOrdenacaoETamanhoMaximo() throws Exception {
     DadosDeAutenticacaoTeste admin = criarAdmin();
     criarOutroAdmin(admin.restauranteId(), "z-admin");
@@ -172,6 +407,7 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
     assertThat(
             objectMapper.readTree(nuloExplicito.getResponse().getContentAsString()).get("errors"))
         .isNotNull();
+    assertThat(codigo(nuloExplicito)).isEqualTo("VALIDACAO_INVALIDA");
 
     MvcResult vazio =
         mockMvc
@@ -182,6 +418,8 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
                     .content("{}"))
             .andReturn();
     assertThat(vazio.getResponse().getStatus()).isEqualTo(400);
+    assertThat(codigo(vazio)).isEqualTo("VALIDACAO_INVALIDA");
+    assertThat(camposDeErro(vazio)).contains("body");
   }
 
   @Test
@@ -219,6 +457,11 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
     MvcResult senhaAtualInvalida =
         atualizarSenha(admin, "{\"senha\":\"senha-nova-123\",\"senhaAtual\":\"incorreta-123\"}");
     assertThat(senhaAtualInvalida.getResponse().getStatus()).isEqualTo(422);
+
+    MvcResult senhaAtualCurta =
+        atualizarSenha(admin, "{\"senha\":\"senha-nova-123\",\"senhaAtual\":\"x\"}");
+    assertThat(senhaAtualCurta.getResponse().getStatus()).isEqualTo(422);
+    assertThat(codigo(senhaAtualCurta)).isEqualTo("SENHA_ATUAL_INVALIDA");
 
     MvcResult sucesso =
         atualizarSenha(
@@ -422,5 +665,15 @@ class UsuariosCrudIT extends IntegracaoBaseIT {
         .readTree(resultado.getResponse().getContentAsString())
         .get("code")
         .asString();
+  }
+
+  private List<String> camposDeErro(MvcResult resultado) throws Exception {
+    return objectMapper
+        .readTree(resultado.getResponse().getContentAsString())
+        .get("errors")
+        .findValues("campo")
+        .stream()
+        .map(erro -> erro.asString())
+        .toList();
   }
 }

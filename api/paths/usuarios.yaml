@@ -35,6 +35,9 @@ colecao:
     tags: [usuarios]
     operationId: criarUsuario
     summary: Cria um usuário
+    description: |
+      ADMIN exige login e senha. GARCOM e COPA exigem PIN e não aceitam login ou senha.
+      Funcionários recebem um código exclusivo do restaurante, nunca reutilizado.
     x-roles: [ADMIN]
     requestBody:
       required: true
@@ -61,7 +64,16 @@ colecao:
       '403':
         $ref: ../components/responses.yaml#/Forbidden
       '409':
-        description: Login já existe no restaurante (`LOGIN_JA_EXISTE`).
+        description: Login duplicado ou colisão persistente de código (`LOGIN_JA_EXISTE` ou `CODIGO_JA_EXISTE`).
+        headers:
+          X-Correlation-Id:
+            $ref: ../components/headers.yaml#/CorrelationId
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/common.yaml#/Problem
+      '422':
+        description: Não há códigos de funcionário disponíveis (`CODIGOS_ESGOTADOS`).
         headers:
           X-Correlation-Id:
             $ref: ../components/headers.yaml#/CorrelationId
@@ -97,6 +109,7 @@ item:
     tags: [usuarios]
     operationId: atualizarUsuario
     summary: Atualiza um usuário (parcial)
+    description: Redefinir o PIN de um funcionário revoga suas sessões e exige troca no próximo login.
     x-roles: [ADMIN]
     requestBody:
       required: true

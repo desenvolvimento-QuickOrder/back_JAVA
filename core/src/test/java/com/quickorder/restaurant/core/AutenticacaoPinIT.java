@@ -2,6 +2,7 @@ package com.quickorder.restaurant.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.quickorder.restaurant.core.equipe.domain.GeradorDeTokenOpaco;
@@ -12,6 +13,7 @@ import com.quickorder.restaurant.core.equipe.domain.RepositorioDeUsuarios;
 import com.quickorder.restaurant.core.equipe.domain.Usuario;
 import com.quickorder.restaurant.core.shared.tenant.ExecucaoNoTenant;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,8 +55,8 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
   @Test
   void funcionarioTrocaPinObrigatorioEEntraComNovoPin() throws Exception {
     DadosDeAutenticacaoTeste admin = criarAdmin();
-    Usuario funcionario = criarFuncionario(admin, "1234", "2580");
     String accessAdmin = accessToken(login(admin.slug(), admin.login(), admin.senha()));
+    DadosDoFuncionario funcionario = criarFuncionarioPelaApi(accessAdmin, "2580");
     DadosDoDispositivo dispositivo = registrarDispositivo(accessAdmin);
 
     MvcResult primeiroLogin =
@@ -82,6 +84,7 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
     assertThat(bloqueada.getResponse().getStatus()).isEqualTo(403);
     assertThat(codigo(bloqueada)).isEqualTo("TROCA_DE_PIN_OBRIGATORIA");
 
+    String pinNovo = pinNovoDiferenteDoCodigo(funcionario.codigo());
     MvcResult pinNovoFraco = trocarPin(resposta.get("accessToken").asString(), "2580", "1234");
     assertThat(pinNovoFraco.getResponse().getStatus()).isEqualTo(400);
     assertThat(pinNovoFraco.getResponse().getContentAsString()).contains("pinNovo");
@@ -89,7 +92,7 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
     assertThat(pinAtualInvalido.getResponse().getStatus()).isEqualTo(422);
     assertThat(codigo(pinAtualInvalido)).isEqualTo("PIN_ATUAL_INVALIDO");
     assertThat(
-            trocarPin(resposta.get("accessToken").asString(), "2580", "2581")
+            trocarPin(resposta.get("accessToken").asString(), "2580", pinNovo)
                 .getResponse()
                 .getStatus())
         .isEqualTo(204);
@@ -104,12 +107,83 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
                 .getStatus())
         .isEqualTo(401);
 
-    MvcResult novoLogin = loginPin(admin.slug(), funcionario.codigo(), "2581", dispositivo.token());
+    MvcResult novoLogin =
+        loginPin(admin.slug(), funcionario.codigo(), pinNovo, dispositivo.token());
     assertThat(novoLogin.getResponse().getStatus()).isEqualTo(200);
     var novoCorpo = objectMapper.readTree(novoLogin.getResponse().getContentAsString());
     assertThat(novoCorpo.get("deveTrocarPin").asBoolean()).isFalse();
     assertThat(jwtDecoder.decode(novoCorpo.get("accessToken").asString()).getClaimAsString("did"))
         .isEqualTo(dispositivo.id().toString());
+  }
+
+  @Test
+  void trocarPapelDeFuncionarioRevogaRefreshDaSessao() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    String accessAdmin = accessToken(login(admin.slug(), admin.login(), admin.senha()));
+    DadosDoFuncionario funcionario = criarFuncionarioPelaApi(accessAdmin, "2580");
+    DadosDoDispositivo dispositivo = registrarDispositivo(accessAdmin);
+    String refresh =
+        objectMapper
+            .readTree(
+                loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivo.token())
+                    .getResponse()
+                    .getContentAsString())
+            .get("refreshToken")
+            .asString();
+
+    MvcResult alterado =
+        mockMvc
+            .perform(
+                patch("/api/v1/usuarios/{id}", funcionario.id())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessAdmin)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"papel\":\"COPA\"}"))
+            .andReturn();
+    assertThat(alterado.getResponse().getStatus()).isEqualTo(200);
+    assertThat(renovar(refresh, dispositivo.token()).getResponse().getStatus()).isEqualTo(401);
+  }
+
+  @Test
+  void redefinirPinAdministrativamenteRevogaRefreshEForcaNovaTroca() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    String accessAdmin = accessToken(login(admin.slug(), admin.login(), admin.senha()));
+    DadosDoFuncionario funcionario = criarFuncionarioPelaApi(accessAdmin, "2580");
+    DadosDoDispositivo dispositivo = registrarDispositivo(accessAdmin);
+    String refresh =
+        objectMapper
+            .readTree(
+                loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivo.token())
+                    .getResponse()
+                    .getContentAsString())
+            .get("refreshToken")
+            .asString();
+    String pinNovo = pinNovoDiferenteDoCodigo(funcionario.codigo());
+
+    MvcResult redefinido =
+        mockMvc
+            .perform(
+                patch("/api/v1/usuarios/{id}", funcionario.id())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessAdmin)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"pin\":\"" + pinNovo + "\"}"))
+            .andReturn();
+    assertThat(redefinido.getResponse().getStatus()).isEqualTo(200);
+    assertThat(redefinido.getResponse().getContentAsString()).doesNotContain(pinNovo);
+    assertThat(renovar(refresh, dispositivo.token()).getResponse().getStatus()).isEqualTo(401);
+    assertThat(
+            loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivo.token())
+                .getResponse()
+                .getStatus())
+        .isEqualTo(401);
+    MvcResult novoLogin =
+        loginPin(admin.slug(), funcionario.codigo(), pinNovo, dispositivo.token());
+    assertThat(novoLogin.getResponse().getStatus()).isEqualTo(200);
+    assertThat(
+            objectMapper
+                .readTree(novoLogin.getResponse().getContentAsString())
+                .get("deveTrocarPin")
+                .asBoolean())
+        .isTrue();
   }
 
   @Test
@@ -204,7 +278,7 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
                 .get("detail")
                 .asString());
 
-    for (int tentativa = 0; tentativa < 3; tentativa++) {
+    for (int tentativa = 0; tentativa < 4; tentativa++) {
       assertThat(
               loginPin(admin.slug(), funcionario.codigo(), "9999", dispositivo.token())
                   .getResponse()
@@ -215,6 +289,43 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
         loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivo.token());
     assertThat(contaBloqueada.getResponse().getStatus()).isEqualTo(429);
     assertThat(contaBloqueada.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
+  }
+
+  @Test
+  void tentativasSemDispositivoOuComTokenInvalidoNaoBloqueiamContaDoFuncionario() throws Exception {
+    DadosDeAutenticacaoTeste admin = criarAdmin();
+    String accessAdmin = accessToken(login(admin.slug(), admin.login(), admin.senha()));
+    DadosDoFuncionario funcionario = criarFuncionarioPelaApi(accessAdmin, "2580");
+    DadosDoDispositivo dispositivoRevogado = registrarDispositivo(accessAdmin);
+    DadosDoDispositivo dispositivoValido = registrarDispositivo(accessAdmin);
+    assertThat(revogar(accessAdmin, dispositivoRevogado.id()).getResponse().getStatus())
+        .isEqualTo(200);
+
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", null).getResponse().getStatus())
+          .isEqualTo(401);
+    }
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", "token-invalido")
+                  .getResponse()
+                  .getStatus())
+          .isEqualTo(401);
+    }
+    for (int tentativa = 0; tentativa < 6; tentativa++) {
+      assertThat(
+              loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivoRevogado.token())
+                  .getResponse()
+                  .getStatus())
+          .isEqualTo(401);
+    }
+
+    assertThat(
+            loginPin(admin.slug(), funcionario.codigo(), "2580", dispositivoValido.token())
+                .getResponse()
+                .getStatus())
+        .isEqualTo(200);
   }
 
   @Test
@@ -250,6 +361,33 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
             hashDeSenha.gerar(pin));
     execucaoNoTenant.executar(admin.restauranteId(), () -> usuarios.salvar(funcionario));
     return funcionario;
+  }
+
+  private DadosDoFuncionario criarFuncionarioPelaApi(String accessToken, String pin)
+      throws Exception {
+    MvcResult resultado =
+        mockMvc
+            .perform(
+                post("/api/v1/usuarios")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"nome\":\"Funcionário\",\"papel\":\"GARCOM\",\"pin\":\"" + pin + "\"}"))
+            .andReturn();
+    assertThat(resultado.getResponse().getStatus()).isEqualTo(201);
+    var corpo = objectMapper.readTree(resultado.getResponse().getContentAsString());
+    String codigo = corpo.get("codigo").asString();
+    assertThat(codigo).matches("\\d{4}").isNotEqualTo(pin);
+    assertThat(corpo.has("pin")).isFalse();
+    assertThat(resultado.getResponse().getContentAsString()).doesNotContain(pin);
+    return new DadosDoFuncionario(UUID.fromString(corpo.get("id").asString()), codigo);
+  }
+
+  private String pinNovoDiferenteDoCodigo(String codigo) {
+    return List.of("3579", "4680", "5792", "6205", "8042").stream()
+        .filter(pin -> !pin.equals(codigo))
+        .findFirst()
+        .orElseThrow();
   }
 
   private DadosDoDispositivo registrarDispositivo(String accessToken) throws Exception {
@@ -352,6 +490,8 @@ class AutenticacaoPinIT extends IntegracaoBaseIT {
   private static String proximoIp() {
     return "198.51.100." + (IP.getAndIncrement() % 250 + 1);
   }
+
+  private record DadosDoFuncionario(UUID id, String codigo) {}
 
   private record DadosDoDispositivo(UUID id, String token) {}
 }

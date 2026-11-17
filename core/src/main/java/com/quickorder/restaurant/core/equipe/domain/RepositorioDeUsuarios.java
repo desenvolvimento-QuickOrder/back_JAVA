@@ -16,6 +16,8 @@ public interface RepositorioDeUsuarios {
 
   boolean existeLogin(String login);
 
+  List<String> codigosUsados();
+
   List<Usuario> bloquearAdminsAtivos();
 
   PaginaDeUsuarios listar(Papel papel, Boolean ativo, int pagina, int tamanho);
