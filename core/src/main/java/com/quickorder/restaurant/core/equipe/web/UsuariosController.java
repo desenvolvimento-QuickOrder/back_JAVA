@@ -163,9 +163,7 @@ public class UsuariosController implements UsuariosApi {
   }
 
   private static CampoAtualizacao<String> campo(String valor) {
-    return valor == null
-        ? CampoAtualizacao.ausente()
-        : CampoAtualizacao.informado(valor);
+    return valor == null ? CampoAtualizacao.ausente() : CampoAtualizacao.informado(valor);
   }
 
   private static <T> T valor(JsonNullable<T> campo) {
