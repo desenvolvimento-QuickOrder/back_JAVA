@@ -74,8 +74,28 @@ public class MesaController {
   @PatchMapping("/{id}")
   public MesaResponse atualizar(
       @PathVariable UUID id, @Valid @RequestBody MesaUpdateRequest request) {
+    if (request.vazio()
+        || (request.numero() != null
+            && request.numero().isPresent()
+            && request.numero().get() == null)
+        || (request.capacidade() != null
+            && request.capacidade().isPresent()
+            && request.capacidade().get() == null)
+        || (request.ativa() != null
+            && request.ativa().isPresent()
+            && request.ativa().get() == null)) {
+      throw new IllegalArgumentException("ATUALIZACAO_INVALIDA");
+    }
     var mesa =
-        atualizarMesaUseCase.execute(id, request.numero(), request.capacidade(), request.ativa());
+        atualizarMesaUseCase.execute(
+            id,
+            request.numero() == null || !request.numero().isPresent()
+                ? null
+                : request.numero().get(),
+            request.capacidade() == null || !request.capacidade().isPresent()
+                ? null
+                : request.capacidade().get(),
+            request.ativa() == null || !request.ativa().isPresent() ? null : request.ativa().get());
     return mesaMapper.toResponse(mesa);
   }
 }

@@ -16,9 +16,6 @@ import java.util.UUID;
 @Table(name = "mesa")
 public class MesaEntity {
 
-  public static final UUID DEFAULT_RESTAURANTE_ID =
-      UUID.fromString("00000000-0000-0000-0000-000000000001");
-
   @Id
   @Column(name = "id", nullable = false, columnDefinition = "uuid")
   private UUID id;
@@ -53,9 +50,8 @@ public class MesaEntity {
     this.ativa = ativa;
   }
 
-  public static MesaEntity fromDomain(Mesa mesa) {
-    return new MesaEntity(
-        mesa.id(), DEFAULT_RESTAURANTE_ID, mesa.numero(), mesa.capacidade(), mesa.ativa());
+  public static MesaEntity fromDomain(Mesa mesa, UUID restauranteId) {
+    return new MesaEntity(mesa.id(), restauranteId, mesa.numero(), mesa.capacidade(), mesa.ativa());
   }
 
   public Mesa toDomain() {
@@ -64,9 +60,6 @@ public class MesaEntity {
 
   @PrePersist
   public void prePersist() {
-    if (restauranteId == null) {
-      restauranteId = DEFAULT_RESTAURANTE_ID;
-    }
     if (criadoEm == null) {
       criadoEm = Instant.now();
     }

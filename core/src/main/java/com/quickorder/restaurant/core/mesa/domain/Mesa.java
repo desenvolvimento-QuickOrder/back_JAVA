@@ -15,7 +15,7 @@ public record Mesa(UUID id, String numero, Integer capacidade, Boolean ativa, Me
     if (numero.length() > 20) {
       throw new IllegalArgumentException("NUMERO_INVALIDO");
     }
-    if (capacidade == null || capacidade <= 0) {
+    if (capacidade == null || capacidade <= 0 || capacidade > 100) {
       throw new IllegalArgumentException("CAPACIDADE_INVALIDA");
     }
     if (ativa == null) {

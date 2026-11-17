@@ -8,6 +8,7 @@ import com.quickorder.restaurant.core.mesa.domain.MesaRepository;
 import com.quickorder.restaurant.core.mesa.domain.MesaStatus;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AtualizarMesaUseCase {
@@ -21,8 +22,11 @@ public class AtualizarMesaUseCase {
     this.mesaStatusResolver = mesaStatusResolver;
   }
 
+  @Transactional
   public Mesa execute(UUID id, String numero, Integer capacidade, Boolean ativa) {
-    var mesa = mesaRepository.findById(id).orElseThrow(() -> new MesaNotFoundException(id));
+    var mesa =
+        mesaRepository.findByIdForUpdate(id).orElseThrow(() -> new MesaNotFoundException(id));
+    numero = numero == null ? null : numero.trim();
 
     if (numero != null
         && !numero.equals(mesa.numero())

@@ -5,6 +5,7 @@ import com.quickorder.restaurant.core.mesa.domain.MesaNotFoundException;
 import com.quickorder.restaurant.core.mesa.domain.MesaRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ObterMesaUseCase {
@@ -17,6 +18,7 @@ public class ObterMesaUseCase {
     this.mesaStatusResolver = mesaStatusResolver;
   }
 
+  @Transactional(readOnly = true)
   public Mesa execute(UUID id) {
     return mesaRepository
         .findById(id)
