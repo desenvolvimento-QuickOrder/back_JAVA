@@ -121,7 +121,7 @@ public class UsuariosController implements UsuariosApi {
     resposta.setId(usuario.id());
     resposta.setNome(usuario.nome());
     resposta.setLogin(usuario.login());
-    resposta.setCodigo(usuario.codigo());
+    resposta.setCodigo(JsonNullable.of(usuario.codigo()));
     resposta.setPapel(
         ListarUsuarios200ResponseAllOfItemsInner.PapelEnum.valueOf(usuario.papel().name()));
     resposta.setAtivo(usuario.ativo());
