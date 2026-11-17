@@ -113,15 +113,15 @@ Resultados:
 
 ## CI e PR
 
-- **Run:** [CI 44069762889](https://github.com/desenvolvimento-QuickOrder/back_JAVA/actions/runs/44069762889)
-- **Head validado:** `2da5fc217d2e04b77f1d75edc8d6ed282b14b33b`
+- **Run:** [CI 44070306764](https://github.com/desenvolvimento-QuickOrder/back_JAVA/actions/runs/44070306764)
+- **Head validado:** `5b3596d4bfdca71be2c423bef153bb9dc885e151`
 - `build`: sucesso — formatação, testes e relatórios.
 - `contrato`: sucesso — bundle, Spectral, papéis e compatibilidade.
 - `imagem`: sucesso — construção da imagem.
 
-O workflow inicialmente ficou em `action_required`; foi feita uma única reexecução do mesmo
-run, que terminou com os três jobs verdes. O PR permanece aberto contra `main`, mergeável e
-não foi mesclado.
+O workflow inicialmente ficou em `action_required`; foi feita uma reexecução autorizada do
+mesmo run, que terminou com os três jobs verdes. O PR permanece aberto contra `main`, mergeável
+e não foi mesclado.
 
 ## Desvios, riscos e sugestões futuras
 
