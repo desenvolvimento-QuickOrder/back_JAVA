@@ -1,0 +1,1769 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-11T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_quickorder_render",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "QuickOrder  Render",
+      "description": "Mesmas requests da collection local, apontando para a API publicada no Render.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_quickorder_render",
+      "_type": "environment",
+      "parentId": "wrk_quickorder_render",
+      "name": "QuickOrder Render",
+      "data": {
+        "serviceUrl": "https://quickorder-api-eum8.onrender.com",
+        "baseUrl": "https://quickorder-api-eum8.onrender.com/api/v1",
+        "restaurante": "quickorder",
+        "adminLogin": "adm_quick",
+        "adminSenha": "SUBSTITUA_PELA_SENHA_DO_ADMIN",
+        "accessTokenAdmin": "",
+        "refreshTokenAdmin": "",
+        "refreshTokenAnterior": "",
+        "accessTokenGarcom": "",
+        "refreshTokenGarcom": "",
+        "deviceToken": "",
+        "deviceTokenInvalido": "token-invalido-para-teste",
+        "adminId": "",
+        "garcomId": "",
+        "garcomCodigo": "",
+        "dispositivoId": "",
+        "pin": "2580",
+        "pinNovo": "7395",
+        "correlationId": "eduardo-render-001",
+        "restauranteOutro": "restaurante-outro",
+        "adminLoginOutro": "",
+        "adminSenhaOutro": "",
+        "usuarioIdOutroTenant": "",
+        "adminNomeOriginal": "Administrador",
+        "manualDispositivoId": "cfbce873-3cb3-4009-9b72-a845a1b2150e",
+        "manualGarcomId": "840eaff7-2db5-4ac5-9d1b-836c910d7bfd"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "serviceUrl",
+          "baseUrl",
+          "restaurante",
+          "adminLogin",
+          "adminSenha",
+          "accessTokenAdmin",
+          "refreshTokenAdmin",
+          "refreshTokenAnterior",
+          "accessTokenGarcom",
+          "refreshTokenGarcom",
+          "deviceToken",
+          "deviceTokenInvalido",
+          "adminId",
+          "garcomId",
+          "garcomCodigo",
+          "dispositivoId",
+          "pin",
+          "pinNovo",
+          "correlationId",
+          "restauranteOutro",
+          "adminLoginOutro",
+          "adminSenhaOutro",
+          "usuarioIdOutroTenant"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1
+    },
+    {
+      "_id": "fld_issue0_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "00  Issue 0  Fundacao e saude",
+      "description": "Health pAAaTMAa AaaAAaA AAAasAAazAAAaTMAAAasAAA AAAAAAaAAAAAAaA34AAAAaTMAa AaaAAAAAAaAAAAaAAAAaTMAAAasAA...AAAaAAasAAoblico do serviAAaTMAa AaaAAaA AAAasAAazAAAaTMAAAasAAA AAAAAAaAAAAAAaA34AAAAaTMAa AaaAAAAAAaAAAAaAAAAaTMAAAasAA...AAAaAAasAAo.",
+      "environment": {},
+      "metaSortKey": 100
+    },
+    {
+      "_id": "req_issue0_health_render",
+      "_type": "request",
+      "parentId": "fld_issue0_render",
+      "name": "Health",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.serviceUrl }}/actuator/health",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 101,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "fld_issue1_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "01  Issue 1  Correlation ID, Problem e autorizacao",
+      "description": "401 sem bearer e erro de JSON malformado; confira Problem Details.",
+      "environment": {},
+      "metaSortKey": 200
+    },
+    {
+      "_id": "req_issue1_unauthenticated_render",
+      "_type": "request",
+      "parentId": "fld_issue1_render",
+      "name": "Usuarios sem bearer",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 201,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue1_malformed_json_render",
+      "_type": "request",
+      "parentId": "fld_issue1_render",
+      "name": "Login com JSON malformado",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{malformado"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 202,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 400', function () {\n  insomnia.expect(insomnia.response.code).to.eql(400);\n});"
+    },
+    {
+      "_id": "fld_issue2a_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "02a  Issue 2a  Login ADMIN, JWT e sessao",
+      "description": "Login, JWKS, rotaAAaTMAa AaaAAaA AAAasAAazAAAaTMAAAasAAA AAAAAAaAAAAAAaA34AAAAaTMAa AaaAAAAAAaAAAAaAAAAaTMAAAasAA...AAAaAAasAAAAaTMAa AaaAAaA AAAasAAazAAAaTMAAAasAAA AAAAAAaAAAAAAaA34AAAAaTMAa AaaAAAAAAaAAAAaAAAAaTMAAAasAA...AAAaAAasAAo e replay de refresh, logout e rate limit.",
+      "environment": {},
+      "metaSortKey": 300
+    },
+    {
+      "_id": "req_issue2a_login_admin_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Login ADMIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"{{ _.adminLogin }}\",\n  \"senha\": \"{{ _.adminSenha }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  insomnia.environment.set('accessTokenAdmin', body.accessToken);\n  insomnia.environment.set('refreshTokenAdmin', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 301,
+      "preRequestScript": "const senha = insomnia.environment.get('adminSenha');\nif (!senha || senha === 'SUBSTITUA_PELA_SENHA_DO_ADMIN') throw new Error('Variavel obrigatoria vazia ou nao configurada: adminSenha');"
+    },
+    {
+      "_id": "req_issue2a_login_bad_password_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Login ADMIN  senha errada",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"{{ _.adminLogin }}\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 302,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_jwks_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "JWKS publico",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.serviceUrl }}/.well-known/jwks.json",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 303,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue2a_refresh_rotate_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Refresh ADMIN  rotacao inicial",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAdmin }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  insomnia.environment.set('refreshTokenAnterior', insomnia.environment.get('refreshTokenAdmin'));\n  insomnia.environment.set('refreshAdminRotatedAt', String(Date.now()));\n  insomnia.environment.set('accessTokenAdmin', body.accessToken);\n  insomnia.environment.set('refreshTokenAdmin', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 304,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenAdmin')) throw new Error('Variavel obrigatoria vazia: refreshTokenAdmin');"
+    },
+    {
+      "_id": "req_issue2a_refresh_replay_within_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Refresh ADMIN  replay ate 30 s",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAnterior }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  insomnia.environment.set('accessTokenAdmin', body.accessToken);\n  insomnia.environment.set('refreshTokenAdmin', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 305
+    },
+    {
+      "_id": "req_issue2a_refresh_replay_late_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Refresh ADMIN  replay depois de 30 s",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAnterior }}\"\n}"
+      },
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenAnterior')) throw new Error('Variavel obrigatoria vazia: refreshTokenAnterior');\nconst started = Number(insomnia.environment.get('refreshAdminRotatedAt') || 0);\nconst elapsed = started ? Date.now() - started : 0;\nconst wait = Math.max(0, 31000 - elapsed);\nif (wait > 29000) throw new Error('Replay tardio expirou; execute a partir da rotacao inicial.');\nif (wait > 0) await new Promise(resolve => setTimeout(resolve, wait));",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 309,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_logout_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Logout  idempotente",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/logout",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAdmin }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 307,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 204', function () {\n  insomnia.expect(insomnia.response.code).to.eql(204);\n});",
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenAdmin')) throw new Error('Variavel obrigatoria vazia: refreshTokenAdmin');"
+    },
+    {
+      "_id": "req_issue2a_logout_repeat_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Logout  segunda chamada idempotente",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/logout",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAdmin }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 308,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 204', function () {\n  insomnia.expect(insomnia.response.code).to.eql(204);\n});",
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenAdmin')) throw new Error('Variavel obrigatoria vazia: refreshTokenAdmin');"
+    },
+    {
+      "_id": "req_issue2a_rate_1_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  falha 1 de 5",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 901,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_rate_2_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  falha 2 de 5",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 902,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_rate_3_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  falha 3 de 5",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 903,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_rate_4_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  falha 4 de 5",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 904,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_rate_5_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  falha 5 de 5",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 905,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue2a_rate_6_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Rate limit  6a falha",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"limite-manual\",\n  \"senha\": \"senha-incorreta-para-teste\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 906,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 429', function () {\n  insomnia.expect(insomnia.response.code).to.eql(429);\n});"
+    },
+    {
+      "_id": "fld_issue2b_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "02b  Issue 2b  Dispositivo confiavel",
+      "description": "Registre o dispositivo como ADMIN e guarde o deviceToken.",
+      "environment": {},
+      "metaSortKey": 400
+    },
+    {
+      "_id": "req_issue2b_register_device_render",
+      "_type": "request",
+      "parentId": "fld_issue2b_render",
+      "name": "Registrar dispositivo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/dispositivos",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Tablet 1\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 201) {\n  const body = insomnia.response.json();\n  if (!body.id) throw new Error('Resposta sem dispositivo id');\n  if (!body.deviceToken) throw new Error('Resposta sem deviceToken');\n  insomnia.environment.set('dispositivoId', body.id);\n  insomnia.environment.set('deviceToken', body.deviceToken);\n}\n\ninsomnia.test('Status esperado: HTTP 201', function () {\n  insomnia.expect(insomnia.response.code).to.eql(201);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 401,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');"
+    },
+    {
+      "_id": "req_issue2b_list_devices_render",
+      "_type": "request",
+      "parentId": "fld_issue2b_render",
+      "name": "Listar dispositivos",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/dispositivos?page=0&size=20",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 402,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "fld_issue3a_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "03a  Issue 3a  CRUD administrativo de usuarios",
+      "description": "Use o ADMIN bootstrap. Copie seu id da listagem para usuarioId antes dos PATCHs.",
+      "environment": {},
+      "metaSortKey": 500
+    },
+    {
+      "_id": "req_issue3a_list_users_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "Listar usuarios  paginacao",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios?page=0&size=20&papel=ADMIN&ativo=true",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  if (!body.items || body.items.length === 0 || !body.items[0].id) {\n    throw new Error('Listagem sem adminId');\n  }\n  insomnia.environment.set('adminId', body.items[0].id);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 501,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');"
+    },
+    {
+      "_id": "req_issue3a_patch_absent_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "PATCH usuario  campo presente e outros ausentes",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "PATCH",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"ADMIN atualizado pelo Insomnia\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 502,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue3a_patch_null_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "PATCH usuario  nome null",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "PATCH",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": null\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 503,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 400', function () {\n  insomnia.expect(insomnia.response.code).to.eql(400);\n});"
+    },
+    {
+      "_id": "req_issue3a_duplicate_login_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "Criar ADMIN  login duplicado",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Login duplicado\",\n  \"papel\": \"ADMIN\",\n  \"login\": \"{{ _.adminLogin }}\",\n  \"senha\": \"SenhaLocalDuplicada123!\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 504,
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 409', function () {\n  insomnia.expect(insomnia.response.code).to.eql(409);\n});"
+    },
+    {
+      "_id": "req_issue3a_role_admin_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "PATCH ADMIN  troca de papel",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "PATCH",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"papel\": \"GARCOM\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 505,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 422', function () {\n  insomnia.expect(insomnia.response.code).to.eql(422);\n});"
+    },
+    {
+      "_id": "req_issue3a_current_password_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "PATCH ADMIN  senhaAtual incorreta",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "PATCH",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senha\": \"NovaSenhaLocal123!\",\n  \"senhaAtual\": \"x\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 506,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 422', function () {\n  insomnia.expect(insomnia.response.code).to.eql(422);\n});"
+    },
+    {
+      "_id": "req_issue3a_last_admin_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "Desativar ultimo ADMIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}/desativar",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 507,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 422', function () {\n  insomnia.expect(insomnia.response.code).to.eql(422);\n});"
+    },
+    {
+      "_id": "fld_issue3b_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "03b  Issue 3b  Funcionario com codigo e PIN",
+      "description": "Crie o GARCOM, copie o cAAaTMAa AaaAAaA AAAasAAazAAAaTMAAAasAAA AAAAAAaAAAAAAaA34AAAAaTMAa AaaAAAAAAaAAAAaAAAAaTMAAAasAA...AAAaAAasAA3digo e valide o fluxo de PIN/dispositivo.",
+      "environment": {},
+      "metaSortKey": 600
+    },
+    {
+      "_id": "req_issue3b_create_employee_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Criar GARCOM  codigo e PIN write-only",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Garcom teste\",\n  \"papel\": \"GARCOM\",\n  \"pin\": \"{{ _.pin }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 201) {\n  const body = insomnia.response.json();\n  if (!body.id) throw new Error('Resposta sem usuario id');\n  if (!body.codigo) throw new Error('Resposta sem codigo do funcionario');\n  insomnia.environment.set('garcomId', body.id);\n  insomnia.environment.set('garcomCodigo', body.codigo);\n}\n\ninsomnia.test('Status esperado: HTTP 201', function () {\n  insomnia.expect(insomnia.response.code).to.eql(201);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 601,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');"
+    },
+    {
+      "_id": "req_issue3b_get_employee_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Obter GARCOM  codigo sem PIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.garcomId }}",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 602,
+      "preRequestScript": "if (!insomnia.environment.get('garcomId')) throw new Error('Variavel obrigatoria vazia: garcomId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue3b_login_pin_initial_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Login GARCOM  PIN inicial",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login-pin",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"codigo\": \"{{ _.garcomCodigo }}\",\n  \"pin\": \"{{ _.pin }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  if (!body.accessToken) throw new Error('Resposta sem accessToken do garcom');\n  if (!body.refreshToken) throw new Error('Resposta sem refreshToken do garcom');\n  insomnia.environment.set('accessTokenGarcom', body.accessToken);\n  insomnia.environment.set('refreshTokenGarcom', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 603,
+      "preRequestScript": "if (!insomnia.environment.get('garcomCodigo')) throw new Error('Variavel obrigatoria vazia: garcomCodigo');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');"
+    },
+    {
+      "_id": "req_issue3b_pin_pending_forbidden_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "GARCOM  rota normal antes de trocar PIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/mesas",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenGarcom }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 604,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenGarcom')) throw new Error('Variavel obrigatoria vazia: accessTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 403', function () {\n  insomnia.expect(insomnia.response.code).to.eql(403);\n});"
+    },
+    {
+      "_id": "req_issue3b_refresh_initial_missing_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh GARCOM inicial  sem device token",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 605,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_refresh_initial_wrong_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh GARCOM inicial  outro device token",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceTokenInvalido }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 606,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_change_pin_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Trocar PIN obrigatorio",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/trocar-pin",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenGarcom }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pinAtual\": \"{{ _.pin }}\",\n  \"pinNovo\": \"{{ _.pinNovo }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 607,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenGarcom')) throw new Error('Variavel obrigatoria vazia: accessTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 204', function () {\n  insomnia.expect(insomnia.response.code).to.eql(204);\n});"
+    },
+    {
+      "_id": "req_issue2a_refresh_after_logout_render",
+      "_type": "request",
+      "parentId": "fld_issue2a_render",
+      "name": "Refresh ADMIN apos logout",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenAdmin }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 310,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenAdmin')) throw new Error('Variavel obrigatoria vazia: refreshTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_login_old_pin_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Login GARCOM  PIN antigo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login-pin",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"codigo\": \"{{ _.garcomCodigo }}\",\n  \"pin\": \"{{ _.pin }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 608,
+      "preRequestScript": "if (!insomnia.environment.get('garcomCodigo')) throw new Error('Variavel obrigatoria vazia: garcomCodigo');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_login_new_pin_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Login GARCOM  PIN novo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login-pin",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"codigo\": \"{{ _.garcomCodigo }}\",\n  \"pin\": \"{{ _.pinNovo }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  if (!body.accessToken) throw new Error('Resposta sem accessToken do garcom');\n  if (!body.refreshToken) throw new Error('Resposta sem refreshToken do garcom');\n  insomnia.environment.set('accessTokenGarcom', body.accessToken);\n  insomnia.environment.set('refreshTokenGarcom', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 609,
+      "preRequestScript": "if (!insomnia.environment.get('garcomCodigo')) throw new Error('Variavel obrigatoria vazia: garcomCodigo');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');"
+    },
+    {
+      "_id": "req_issue3b_garcom_admin_forbidden_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "GARCOM  rota ADMIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenGarcom }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 610,
+      "preRequestScript": "if (!insomnia.environment.get('accessTokenGarcom')) throw new Error('Variavel obrigatoria vazia: accessTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 403', function () {\n  insomnia.expect(insomnia.response.code).to.eql(403);\n});"
+    },
+    {
+      "_id": "req_issue3b_refresh_missing_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh GARCOM  sem device token",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  insomnia.environment.set('accessTokenGarcom', body.accessToken);\n  insomnia.environment.set('refreshTokenGarcom', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 611,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');"
+    },
+    {
+      "_id": "req_issue3b_refresh_wrong_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh GARCOM  outro device token",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceTokenInvalido }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 612,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_refresh_correct_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh GARCOM  device correto",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 613,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');",
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  if (!body.accessToken) throw new Error('Resposta sem accessToken rotacionado');\n  if (!body.refreshToken) throw new Error('Resposta sem refreshToken rotacionado');\n  insomnia.environment.set('accessTokenGarcom', body.accessToken);\n  insomnia.environment.set('refreshTokenGarcom', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue3b_login_admin_again_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Login ADMIN  restaurar acesso administrativo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"login\": \"{{ _.adminLogin }}\",\n  \"senha\": \"{{ _.adminSenha }}\"\n}"
+      },
+      "afterResponseScript": "if (insomnia.response.code === 200) {\n  const body = insomnia.response.json();\n  insomnia.environment.set('accessTokenAdmin', body.accessToken);\n  insomnia.environment.set('refreshTokenAdmin', body.refreshToken);\n}\n\ninsomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});",
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 614,
+      "preRequestScript": "const senha = insomnia.environment.get('adminSenha');\nif (!senha || senha === 'SUBSTITUA_PELA_SENHA_DO_ADMIN') throw new Error('Variavel obrigatoria vazia ou nao configurada: adminSenha');"
+    },
+    {
+      "_id": "req_issue3b_revoke_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Revogar dispositivo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/dispositivos/{{ _.dispositivoId }}/revogar",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 615,
+      "preRequestScript": "if (!insomnia.environment.get('dispositivoId')) throw new Error('Variavel obrigatoria vazia: dispositivoId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue3b_login_revoked_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Login PIN  dispositivo revogado",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login-pin",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"restaurante\": \"{{ _.restaurante }}\",\n  \"codigo\": \"{{ _.garcomCodigo }}\",\n  \"pin\": \"{{ _.pinNovo }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 616,
+      "preRequestScript": "if (!insomnia.environment.get('garcomCodigo')) throw new Error('Variavel obrigatoria vazia: garcomCodigo');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_refresh_revoked_device_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Refresh apos revogar dispositivo",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Device-Token",
+          "value": "{{ _.deviceToken }}"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "none"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refreshTokenGarcom }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 617,
+      "preRequestScript": "if (!insomnia.environment.get('refreshTokenGarcom')) throw new Error('Variavel obrigatoria vazia: refreshTokenGarcom');\nif (!insomnia.environment.get('deviceToken')) throw new Error('Variavel obrigatoria vazia: deviceToken');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 401', function () {\n  insomnia.expect(insomnia.response.code).to.eql(401);\n});"
+    },
+    {
+      "_id": "req_issue3b_desativar_garcom_cleanup_render",
+      "_type": "request",
+      "parentId": "fld_issue3b_render",
+      "name": "Limpeza  desativar GARCOM de teste",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.garcomId }}/desativar",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 618,
+      "preRequestScript": "if (!insomnia.environment.get('garcomId')) throw new Error('Variavel obrigatoria vazia: garcomId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_issue3a_restore_admin_name_render",
+      "_type": "request",
+      "parentId": "fld_issue3a_render",
+      "name": "Limpeza - restaurar nome do ADMIN",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "PATCH",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.adminId }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"{{ _.adminNomeOriginal }}\"\n}"
+      },
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 509,
+      "preRequestScript": "if (!insomnia.environment.get('adminId')) throw new Error('Variavel obrigatoria vazia: adminId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "fld_manual_cleanup_render",
+      "_type": "request_group",
+      "parentId": "wrk_quickorder_render",
+      "name": "Manual - limpeza de residuos",
+      "description": "Fora da ordem principal. Configure manualDispositivoId e manualGarcomId no sub-environment local.",
+      "environment": {},
+      "metaSortKey": 800
+    },
+    {
+      "_id": "req_manual_revoke_residue_render",
+      "_type": "request",
+      "parentId": "fld_manual_cleanup_render",
+      "name": "Manual - revogar dispositivo residual",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/dispositivos/{{ _.manualDispositivoId }}/revogar",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 801,
+      "preRequestScript": "if (!insomnia.environment.get('manualDispositivoId')) throw new Error('Variavel obrigatoria vazia: manualDispositivoId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    },
+    {
+      "_id": "req_manual_disable_residue_render",
+      "_type": "request",
+      "parentId": "fld_manual_cleanup_render",
+      "name": "Manual - desativar garcom residual",
+      "description": "Validacao da regra da API. O status esperado esta definido tambem no assertion pos-resposta.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.manualGarcomId }}/desativar",
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "value": "{{ _.correlationId }}"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessTokenAdmin }}"
+      },
+      "body": {},
+      "parameters": [],
+      "settingSendCookies": false,
+      "settingStoreCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "metaSortKey": 802,
+      "preRequestScript": "if (!insomnia.environment.get('manualGarcomId')) throw new Error('Variavel obrigatoria vazia: manualGarcomId');\nif (!insomnia.environment.get('accessTokenAdmin')) throw new Error('Variavel obrigatoria vazia: accessTokenAdmin');",
+      "afterResponseScript": "insomnia.test('Status esperado: HTTP 200', function () {\n  insomnia.expect(insomnia.response.code).to.eql(200);\n});"
+    }
+  ]
+}
