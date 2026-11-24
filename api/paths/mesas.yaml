@@ -132,11 +132,4 @@ item:
             schema:
               $ref: ../components/schemas/common.yaml#/Problem
       '422':
-        description: Regra violada, por exemplo desativar mesa ocupada (`MESA_OCUPADA`).
-        headers:
-          X-Correlation-Id:
-            $ref: ../components/headers.yaml#/CorrelationId
-        content:
-          application/problem+json:
-            schema:
-              $ref: ../components/schemas/common.yaml#/Problem
+        $ref: ../components/responses.yaml#/UnprocessableEntity

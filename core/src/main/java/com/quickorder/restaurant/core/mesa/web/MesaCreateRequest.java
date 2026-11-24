@@ -8,5 +8,7 @@ import jakarta.validation.constraints.Size;
 public record MesaCreateRequest(
     @NotBlank(message = "NUMERO_OBRIGATORIO") @Size(max = 20, message = "NUMERO_INVALIDO")
         String numero,
-    @NotNull(message = "CAPACIDADE_OBRIGATORIA") @Min(value = 1, message = "CAPACIDADE_INVALIDA")
+    @NotNull(message = "CAPACIDADE_OBRIGATORIA")
+        @Min(value = 1, message = "CAPACIDADE_INVALIDA")
+        @jakarta.validation.constraints.Max(value = 100, message = "CAPACIDADE_INVALIDA")
         Integer capacidade) {}
